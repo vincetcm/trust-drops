@@ -10,8 +10,8 @@ contract TrustDrops is Ownable {
     uint public networkConstant = 2;
     uint public totalReputation;
     uint public lastDistributionTime;
-    uint public constant DISTRIBUTION_INTERVAL = 1 weeks;
-    uint public constant DISTRIBUTION_PERCENTAGE = 10;
+    uint public constant DISTRIBUTION_INTERVAL = 1 days;
+    uint public constant DISTRIBUTION_DENOMINATOR = 200;
 
     struct Stake {
         uint amount;
@@ -93,7 +93,7 @@ contract TrustDrops is Ownable {
     function calculateIndividualAllocation(address candidate) internal returns (uint) {
         if (block.timestamp >= lastDistributionTime + DISTRIBUTION_INTERVAL) {
             uint totalTokens = mandToken.balanceOf(address(this));
-            uint tokensForDistribution = totalTokens * DISTRIBUTION_PERCENTAGE / 100;
+            uint tokensForDistribution = totalTokens / DISTRIBUTION_DENOMINATOR;
 
             uint candidateReputation = reputation[candidate];
             uint candidateAllocation = tokensForDistribution * candidateReputation / totalReputation;
