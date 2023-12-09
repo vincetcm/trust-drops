@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -9,14 +10,16 @@ import "hardhat/console.sol";
 contract TrustDrops is Ownable {
     IERC20 public mandToken;
     address public anonAadhaarVerifierAddr;
-    uint public constant NETWORK_CONSTANT = 2; // Fixed network constant
+    uint public networkConstant = 2;
     uint public totalReputation;
-    uint public constant DISTRIBUTION_INTERVAL = 1 minutes;
+    uint public lastDistributionTime;
+    uint public constant DISTRIBUTION_INTERVAL = 1 days;
     uint public constant DISTRIBUTION_DENOMINATOR = 200;
     uint public constant LOGIN_AIRDROP_AMOUNT = 100 * 1e18;
 
     struct Stake {
         uint amount;
+        uint lastNetworkConstant;
     }
 
     struct Candidate {
@@ -34,11 +37,13 @@ contract TrustDrops is Ownable {
 
     event Staked(address indexed staker, address indexed candidate, uint amount);
     event Unstaked(address indexed staker, address indexed candidate, uint amount);
+    event NetworkConstantChanged(uint oldConstant, uint newConstant);
     event TokensClaimed(address indexed candidate, uint amount);
 
     constructor(address _mandTokenAddress, address _anonAadhaarVerifierAddr) Ownable(msg.sender) {
         mandToken = IERC20(_mandTokenAddress);
         anonAadhaarVerifierAddr = _anonAadhaarVerifierAddr;
+        lastDistributionTime = block.timestamp;
     }
 
     function verifyAadhaar(uint256[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[34] calldata _pubSignals) external {
@@ -62,45 +67,52 @@ contract TrustDrops is Ownable {
             candidates[candidate].hasStaked[msg.sender] = true;
         }
 
-        totalReputation -= calculateReputation(stakes[msg.sender][candidate].amount);
-        stakes[msg.sender][candidate].amount += amount;
-        totalStakedByUser[msg.sender] += amount;
         updateReputation(msg.sender, candidate);
-        totalReputation += calculateReputation(stakes[msg.sender][candidate].amount);
+        stakes[msg.sender][candidate].amount += amount;
+        stakes[msg.sender][candidate].lastNetworkConstant = networkConstant;
+        totalReputation += calculateReputation(amount);
+        totalStakedByUser[msg.sender] += amount;
 
         emit Staked(msg.sender, candidate, amount);
     }
 
     function updateReputation(address staker, address candidate) internal {
         Stake storage _stake = stakes[staker][candidate];
-        reputation[candidate] = calculateReputation(_stake.amount);
+        if (_stake.lastNetworkConstant != networkConstant) {
+            uint oldReputation = calculateReputation(_stake.amount);
+            uint newReputation = calculateReputation(_stake.amount);
+
+            reputation[candidate] = reputation[candidate] - oldReputation + newReputation;
+            _stake.lastNetworkConstant = networkConstant;
+        }
     }
 
     function calculateReputation(uint x) internal pure returns (uint) {
-        if (x == 0) return 0;
+        if (x == 0) {
+            return 0;
+        }
+
         uint z = (x + 1) / 2;
-        uint y = x;
+        y = x;
         while (z < y) {
             y = z;
             z = (x / z + z) / 2;
         }
-        return y/1e9;
+
+        return y;
     }
 
-    function calculateIndividualAllocation(address candidate) public view returns (uint) {
-        if (block.timestamp >= lastClaimTime[msg.sender] + DISTRIBUTION_INTERVAL) {
-            uint totalTokens = mandToken.balanceOf(address(this));
-            uint tokensForDistribution = totalTokens / DISTRIBUTION_DENOMINATOR;
-            uint candidateReputation = reputation[candidate];
-            uint candidateAllocation = tokensForDistribution * candidateReputation / totalReputation;
+    function updateNetworkConstant(uint newConstant) external onlyOwner {
+        require(newConstant > 0, "Constant must be positive");
 
-            return candidateAllocation;
-        }
-        return 0;
+        uint oldConstant = networkConstant;
+        networkConstant = newConstant;
+
+        emit NetworkConstantChanged(oldConstant, newConstant);
     }
 
     function claimTokens() external {
-        require(block.timestamp >= lastClaimTime[msg.sender] + DISTRIBUTION_INTERVAL, "Already claimed for the latest distribution");
+        require(lastClaimTime[msg.sender] < lastDistributionTime, "Already claimed for the latest distribution");
 
         uint tokensToDistribute = calculateIndividualAllocation(msg.sender);
         require(tokensToDistribute > 0, "No tokens to claim");
@@ -111,20 +123,41 @@ contract TrustDrops is Ownable {
         emit TokensClaimed(msg.sender, tokensToDistribute);
     }
 
+    function calculateIndividualAllocation(address candidate) internal returns (uint) {
+        if (block.timestamp >= lastDistributionTime + DISTRIBUTION_INTERVAL) {
+            uint totalTokens = mandToken.balanceOf(address(this));
+            uint tokensForDistribution = totalTokens / DISTRIBUTION_DENOMINATOR;
+
+            uint candidateReputation = reputation[candidate];
+            uint candidateAllocation = tokensForDistribution * candidateReputation / totalReputation;
+            
+            lastDistributionTime = block.timestamp;
+            return candidateAllocation;
+        }
+        return 0;
+    }
+
     function unstake(address candidate, uint amount) external {
         require(amount > 0, "Amount must be positive");
         Stake storage _stake = stakes[msg.sender][candidate];
 
         require(_stake.amount >= amount, "Insufficient staked amount");
 
-        totalReputation -= calculateReputation(stakes[msg.sender][candidate].amount);
-        _stake.amount -= amount;
-        totalStakedByUser[msg.sender] -= amount;
         updateReputation(msg.sender, candidate);
-        totalReputation += calculateReputation(stakes[msg.sender][candidate].amount);
+        _stake.amount -= amount;
+        totalReputation -= calculateReputation(amount);
+        totalStakedByUser[msg.sender] -= amount;
 
         mandToken.transfer(msg.sender, amount);
 
         emit Unstaked(msg.sender, candidate, amount);
+    }
+
+    function getCurrentReputation(address candidate) public returns (uint) {
+        uint length = candidates[candidate].stakers.length;
+        for (uint i = 0; i < length; i++) {
+            updateReputation(candidates[candidate].stakers[i], candidate);
+        }
+        return reputation[candidate];
     }
 }

@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ["dev"],
     },
-    baseGeorli: {
+    baseGoerli: {
       url: process.env.BASE_GOERLI_RPC,
       live: true,
       saveDeployments: true,

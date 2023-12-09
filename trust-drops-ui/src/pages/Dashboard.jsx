@@ -8,6 +8,7 @@ import { IoLockClosedOutline } from 'react-icons/io5';
 import { TbUserUp } from 'react-icons/tb';
 import { FaRegSmileWink } from 'react-icons/fa';
 import { RiLiveLine } from 'react-icons/ri';
+import {ethers} from 'ethers';
 
 import {
   LockClosedIcon,
@@ -81,7 +82,12 @@ function Dashboard() {
   const [voteMessages, setVoteMessages] = useState([])
   const [winkMessages, setWinkMessages] = useState([])
 
-  const { accountAddress, contract } = useContext(DataContext);
+  const [tokenBalance, setTokenBalance] = useState(0)
+  const [stakedBalance, setStakedBalance] = useState(0)
+  const [credScore, setCredScore] = useState(0)
+  const [allocatedTokens, setAllocatedTokens] = useState(0)
+
+  const { accountAddress, contract, erc20Contract } = useContext(DataContext);
 
   console.log("accountAddress", accountAddress)
 
@@ -187,7 +193,16 @@ function Dashboard() {
   };
 
   const handleStake = async () => {
-    const stakeTx = await contract.stake(stakeForAddress, stakeAmount)
+    let estimation = await erc20Contract.estimateGas.approve(contract.address, ethers.utils.parseUnits(stakeAmount));
+    const approveTx = await erc20Contract.approve(contract.address, ethers.utils.parseUnits(stakeAmount), {
+          gasPrice: estimation, 
+        });
+    await approveTx.wait()
+
+    estimation = await contract.estimateGas.stake(stakeForAddress, ethers.utils.parseUnits(stakeAmount));
+    const stakeTx = await contract.stake(stakeForAddress, ethers.utils.parseUnits(stakeAmount), {
+          gasPrice: estimation, 
+        });
     await stakeTx.wait()
 
     console.log('Stake transaction hash', stakeTx.hash)
@@ -216,13 +231,24 @@ function Dashboard() {
     // setIsLoading(false);
   };
 
-  const handleUnstake = () => {
+  const handleUnstake = async () => {
+    console.log(stakeForAddress, ethers.utils.parseUnits(stakeAmount));
+    const estimation = await contract.estimateGas.unstake(stakeForAddress, ethers.utils.parseUnits(stakeAmount));
+    const unstakeTx = await contract.unstake(stakeForAddress, ethers.utils.parseUnits(stakeAmount), {
+          gasPrice: estimation, 
+        });
+    await unstakeTx.wait()
+
+    console.log('Stake transaction hash', unstakeTx.hash)
     console.log('Unstake function executed');
   };
 
   const handleClaim = async() => {
     console.log('Claim function executed');
-    const claimTx = await contract.claimTokens()
+    const estimation = await contract.estimateGas.claimTokens();
+    const claimTx = await contract.claimTokens({
+      gasPrice: estimation
+    })
 
     await claimTx.wait()
 
@@ -398,8 +424,23 @@ function Dashboard() {
     })()
   }, [waku, wakuStatus])
 
+  async function loadUserData() {
+    const tokenBalance = await erc20Contract.balanceOf(accountAddress);
+    setTokenBalance(ethers.utils.formatUnits(tokenBalance));
+
+    const stakedTokens = await contract.totalStakedByUser(accountAddress);
+    setStakedBalance(ethers.utils.formatUnits(stakedTokens));
+
+    const credScore = await contract.reputation(accountAddress);
+    setCredScore(parseInt(credScore));
+
+    const allocation = await contract.calculateIndividualAllocation(accountAddress);
+    setAllocatedTokens(ethers.utils.formatUnits(allocation));
+  }
+
   useEffect(() => {
     checkIfWalletIsConnected();
+    loadUserData();
   }, []);
 
   return (
@@ -411,7 +452,7 @@ function Dashboard() {
               <div className='icon'>
                 <FaRegUserCircle className='text-xl font-bold text-[#7071E8]' />
               </div>
-              <div className='text-lg'>0xfadsfe2...d154</div>
+              <div className='text-lg'>{`${accountAddress.substring(0, 8)}...${accountAddress.substring(accountAddress.length - 4)}`}</div>
             </div>{' '}
             <div className='available-mand'>
               <div className='top-container flex items-center gap-2'>
@@ -423,7 +464,7 @@ function Dashboard() {
                 </div>
               </div>{' '}
               <div className='bottom-container text-3xl font-bold text-center'>
-                3133.50
+                {tokenBalance}
               </div>
             </div>{' '}
             <div className='available-mand'>
@@ -436,7 +477,7 @@ function Dashboard() {
                 </div>
               </div>{' '}
               <div className='bottom-container text-3xl font-bold  text-center'>
-                320
+                {stakedBalance}
               </div>
             </div>{' '}
             <div className='available-mand'>
@@ -449,10 +490,10 @@ function Dashboard() {
                 </div>
               </div>{' '}
               <div className='bottom-container text-3xl font-bold  text-center'>
-                100.50
+                {credScore}
               </div>
             </div>{' '}
-            <div className='available-mand ' onClick={openLeaderBoard}>
+            <div className='available-mand ' onClick={() => openLeaderBoard}>
               <div className='top-container flex items-center gap-2'>
                 <div className='icon'>
                   <MdOutlineLeaderboard className='text-xl font-bold text-[#7071E8]' />
@@ -543,6 +584,7 @@ function Dashboard() {
                     type='text'
                     id='address'
                     placeholder='Enter address'
+                    onChange={(e) => setStakeForAddress(e.target.value)}
                     className='p-2 rounded border-2 border-[#7071E8]  bg-white text-black'
                   />{' '}
                   <label htmlFor='address' className='font-semibold'>
@@ -552,6 +594,7 @@ function Dashboard() {
                     type='text'
                     id='address'
                     placeholder='Enter quantity '
+                    onChange={(e) => setStakeAmount(e.target.value)}
                     className='p-2 rounded border-2 border-[#7071E8]  bg-white text-black'
                   />
                   <button
@@ -652,7 +695,7 @@ function Dashboard() {
             </div>
             <div className='claimreward-item-container p-2 w-full flex  items-center justify-start gap-4  '>
               <div className='left-container text-xl bg-white  flex  gap-4  p-2 font-bold border-2 border-[#7071E8]'>
-                You have <span className='text-bold text-[#7071E8]'>100</span>
+                You have <span className='text-bold text-[#7071E8]'>{allocatedTokens}</span>
                 $DAO to be claimed
               </div>
               <button className='right-container text-xl p-2 font-semibold text-white bg-[#7071E8]'

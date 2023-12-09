@@ -20,14 +20,7 @@ function VerificationPage() {
     onDrop,
   });
 
-  const { contract } = useContext(DataContext);
-
-  // useEffect(() => {
-  //   console.log('Anon Aadhaar status: ', anonAadhaar.status);
-  //   if ((anonAadhaar.status = 'logged-in')) {
-  //     navigate('/dashboard');
-  //   }
-  // }, [anonAadhaar]);
+  const { contract, accountAddress } = useContext(DataContext);
 
   const verifyAadhaarHandler = async (a, b, c, Input) => {
     try {
@@ -50,23 +43,28 @@ function VerificationPage() {
     } catch (err) {
       console.log(err);
     }
-
   }
 
   useEffect(() => {
-    console.log('Anon Aadhaar status: ', anonAadhaar.status);
-    if ((anonAadhaar.status === 'logged-in')) {
+    if (anonAadhaar && contract) {
+      console.log('Anon Aadhaar status: ', anonAadhaar.status);
       (async () => {
-        const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
-          anonAadhaar.pcd
-        );
+        const alreadyLoggedIn = await contract.alreadyLoggedIn(accountAddress);
+        if (alreadyLoggedIn) {
+          navigate('/dashboard');
+        }
+        if ((anonAadhaar.status === 'logged-in')) {
+            const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
+              anonAadhaar.pcd
+            );
 
-        console.log("check a, b, c and Input below -- ");
-        verifyAadhaarHandler(a, b, c, Input)
-        console.log(a, b, c, Input);
+            console.log("check a, b, c and Input below -- ");
+            await verifyAadhaarHandler(a, b, c, Input)
+            console.log(a, b, c, Input);
+        }
       })();
     }
-  }, [anonAadhaar]);
+  }, [anonAadhaar, contract]);
 
   return (
     <div className='flex flex-col items-center w-screen pt-8 font-mono'>

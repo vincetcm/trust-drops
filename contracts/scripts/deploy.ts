@@ -36,6 +36,10 @@ async function main() {
   await mintTx.wait();
   console.log("mintTx", mintTx);
 
+
+  const totCredScore = await trustDrops.totalReputation();
+  console.log("totCredScore", totCredScore);
+
 //   const transferTx = await trustDrops.tempTransfer();
 //   await transferTx.wait();
 //   console.log("transferTx", transferTx);
