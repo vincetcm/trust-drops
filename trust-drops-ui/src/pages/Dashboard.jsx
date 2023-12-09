@@ -24,18 +24,6 @@ import {
 } from "@waku/sdk"
 import protobuf from 'protobufjs';
 import { DataContext } from '../context/DataContext';
-import { ethers } from 'ethers';
-import trustdropABI from '../contracts/trustdropABI.json';
-
-const contractABI = trustdropABI.abi
-const CONTRACT_ADDRESS = "0xB6db4eB8C2DA3298E93B26fce59c790663360788"
-
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const signer = provider.getSigner();
-const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
-
-console.log("contractABI", contractABI)
-
 
 const ContentTopic = `/trustdrops/debug2/proto`
 const Encoder = createEncoder({ contentTopic: ContentTopic })
@@ -93,7 +81,7 @@ function Dashboard() {
   const [voteMessages, setVoteMessages] = useState([])
   const [winkMessages, setWinkMessages] = useState([])
 
-  const { accountAddress } = useContext(DataContext);
+  const { accountAddress, contract } = useContext(DataContext);
 
   console.log("accountAddress", accountAddress)
 

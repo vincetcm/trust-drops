@@ -10,7 +10,7 @@ const DataProvider = ({ children }) => {
   const [stakedOnAddress, setStakedOnAddress] = useState('');
 
   const contractABI = trustdropABI.abi
-  const CONTRACT_ADDRESS = "0xDB08bf5bcA3351ea80899CD15ab829963fD2dfc3"
+  const CONTRACT_ADDRESS = "0x7Ea40E1CD738347A01909FE525078F2086A61892"
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();

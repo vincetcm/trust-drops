@@ -13,14 +13,14 @@ function App() {
   const [anonAadhaar] = useAnonAadhaar();
 
   let retriveItem = JSON.parse(localStorage.getItem('status'));
-  // useEffect(() => {
-  //   console.log('useAnonAadhaar?.status', useAnonAadhaar?.status);
-  //   if (anonAadhaar?.status === 'logged-out') {
-  //     navigate('/verification');
-  //   } else if (anonAadhaar?.status === 'logged-in') {
-  //     navigate('/dashboard');
-  //   }
-  // }, []);
+  useEffect(() => {
+    console.log('useAnonAadhaar?.status', useAnonAadhaar?.status);
+    if (anonAadhaar?.status === 'logged-out') {
+      navigate('/verification');
+    } else if (anonAadhaar?.status === 'logged-in') {
+      navigate('/dashboard');
+    }
+  }, []);
   return (
     <div className='App '>
       <DataProvider>
