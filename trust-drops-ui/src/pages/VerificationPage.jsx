@@ -31,9 +31,12 @@ function VerificationPage() {
 
   const verifyAadhaarHandler = async (a, b, c, Input) => {
     try {
+      const estimation = await contract.estimateGas.verifyAadhaar(a, b, c, Input);
+      console.log("check estimation here - ", estimation);
+
       const verifyTx = await contract.verifyAadhaar(a, b, c, Input, 
         {
-          gasLimit: 300000, 
+          gasPrice: estimation, 
         });
 
       const verifyReceipt = await verifyTx.wait();
