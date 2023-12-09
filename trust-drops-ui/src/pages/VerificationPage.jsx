@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import crypto from 'crypto';
 import { LogInWithAnonAadhaar, useAnonAadhaar } from 'anon-aadhaar-react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardCopyIcon, ChevronDownIcon } from '@heroicons/react/outline';
@@ -25,11 +24,6 @@ function VerificationPage() {
     }
   }, [anonAadhaar]);
 
-  const app_id = BigInt(
-    parseInt(crypto.randomBytes(20).toString('hex'), 16)
-  ).toString(); // random value.
-
-  console.log(app_id);
   return (
     <div className='flex flex-col items-center w-screen pt-8 font-mono'>
       <div className='verification-container p-8 w-[90%] bg-[rgba(112,113,232,0.03)]'>
