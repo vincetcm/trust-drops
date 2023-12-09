@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { GiDropletSplash } from 'react-icons/gi';
 import { useNavigate } from 'react-router-dom';
+import LeaderBoardModal from './LeaderBoardModal';
 const ethers = require('ethers');
 
 function Navbar() {
   const navigate = useNavigate();
   const [account, setAccount] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
   const formatAddress = (address) => {
     const maxLength = 14;
@@ -13,7 +15,12 @@ function Navbar() {
       ? `${address.substring(0, 8)}...${address.substring(address.length - 4)}`
       : address;
   };
-
+  const openLeaderBoard = () => {
+    setOpenModal(true);
+  };
+  const closeModal = () => {
+    setOpenModal(false);
+  };
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
@@ -58,8 +65,16 @@ function Navbar() {
           Trustdrops
         </div>
         {account ? (
-          <div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl'>
-            {formatAddress(account)}
+          <div className='navbar-left-container gap-4 flex'>
+            <button
+              className='text-white px-4 py-2 border-2 border-white text-xl  bg-[#7071E8] text-center  '
+              onClick={openLeaderBoard}
+            >
+              LeaderBoard
+            </button>
+            <div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl flex items-center'>
+              {formatAddress(account)}
+            </div>
           </div>
         ) : (
           <button
@@ -70,6 +85,7 @@ function Navbar() {
           </button>
         )}
       </div>
+      {openModal && <LeaderBoardModal closeModal={closeModal} />}
     </div>
   );
 }

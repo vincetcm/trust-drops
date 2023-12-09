@@ -42,7 +42,7 @@ const LeaderBoardModal = ({ closeModal }) => {
   // if (!isModalOpen) return null;
 
   return (
-    <div className='fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex justify-center items-start pt-20'>
+    <div className='fixed inset-0 z-20 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex justify-center items-start pt-20'>
       <div className=' px-4 sm:px-8 '>
         <div className='py-8'>
           <div className='shadow overflow-hidden rounded border-b border-gray-200'>

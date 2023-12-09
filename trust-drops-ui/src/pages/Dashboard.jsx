@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LeaderBoardModal from '../components/LeaderBoardModal';
 import Navbar from '../components/Navbar';
 import { PiCopySimpleBold } from 'react-icons/pi';
@@ -6,9 +6,35 @@ import { MdOutlineLeaderboard, MdOutlineVerifiedUser } from 'react-icons/md';
 import { FaRegUserCircle, FaRegDotCircle } from 'react-icons/fa';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import { TbUserUp } from 'react-icons/tb';
-function Dashboard() {
-  const [openModal, setOpenModal] = useState(false);
+import { FaRegSmileWink } from 'react-icons/fa';
+import { RiLiveLine } from 'react-icons/ri';
 
+import {
+  LockClosedIcon,
+  LockOpenIcon,
+  EyeIcon,
+} from '@heroicons/react/outline';
+
+function Dashboard() {
+  const activityData = [
+    {
+      type: 'winked',
+      from: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2154',
+      to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
+    },
+    {
+      type: 'staked',
+      from: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2154',
+      to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
+    },
+    {
+      type: 'unstaked',
+      from: '00xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2154',
+      to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
+    },
+  ];
+  const [openModal, setOpenModal] = useState(false);
+  const [feedItems, setFeedItems] = useState(activityData);
   const [isStaking, setIsStaking] = useState(true);
   const [activeTab, setActiveTab] = useState('Your Stakes');
   const stakesData = [
@@ -22,9 +48,72 @@ function Dashboard() {
       stake: '400.00 $DAO',
       credibility: '40.00',
     },
-    { address: '0xadfe2...f15d2', stake: '140.00 $DAO', credibility: '50.00' },
-    { address: '0xadfe2...f135d', stake: '130.00 $DAO', credibility: '11.00' },
+    { address: '0xadfe2...f15d2', stake: '25.00 $DAO', credibility: '5.00' },
+    { address: '0xadfe2...f135d', stake: '16.00 $DAO', credibility: '4.00' },
   ];
+
+  useEffect(() => {
+    // Simulate real-time updates
+    const interval = setInterval(() => {
+      setFeedItems((prevItems) => [
+        ...prevItems,
+        {
+          type: 'winked',
+          from: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
+          to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xad201',
+        }, // New mock data
+      ]);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const LiveFeedItem = ({ type, from, to }) => {
+    const iconSize = 'h-6 w-6';
+
+    const icons = {
+      winked: <FaRegSmileWink className={iconSize + ' text-blue-500'} />,
+      staked: <LockClosedIcon className={iconSize + ' text-green-500'} />,
+      unstaked: <LockOpenIcon className={iconSize + ' text-red-500'} />,
+    };
+
+    return (
+      <div
+        className={`flex items-center  w-full gap-4 p-2 ${
+          type == 'winked'
+            ? 'bg-blue-50'
+            : (type == 'unstaked' ? 'bg-red-50' : '') ||
+              (type == 'staked' ? 'bg-green-50' : '')
+        }`}
+      >
+        <div className=''> {icons[type]}</div>
+
+        <div className='w-full rounded-sm'>
+          <span className='flex-1 items-center gap-2 flex'>
+            {formatAddress(from)}{' '}
+            <PiCopySimpleBold className='text-[#7071E8]' />
+          </span>
+          <span
+            className={`${
+              type == 'winked'
+                ? 'bg-blue-500 text-white text-center px-2 font-light'
+                : (type == 'unstaked'
+                    ? 'bg-red-500 text-white text-center px-2 font-light'
+                    : '') ||
+                  (type == 'staked'
+                    ? 'bg-green-500 text-white text-center px-2 font-light'
+                    : '')
+            }`}
+          >
+            {type}
+          </span>
+          <span className='flex-1 flex items-center gap-2'>
+            {formatAddress(to)} <PiCopySimpleBold className='text-[#7071E8]' />
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   const receivedData = [
     {
@@ -34,7 +123,7 @@ function Dashboard() {
     },
   ];
   const formatAddress = (address) => {
-    const maxLength = 14;
+    const maxLength = 18;
     return address.length > maxLength
       ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
       : address;
@@ -65,10 +154,11 @@ function Dashboard() {
   const closeModal = () => {
     setOpenModal(false);
   };
+
   return (
     <div className='  flex flex-col justify-center w-full md:w-screen font-mono'>
       <div className='flex flex-col items-center justify-between'>
-        <div className='dashboard-container  w-full md:w-[90%] p-4 md:p-8 bg-[rgba(112,113,232,0.03)]'>
+        <div className='dashboard-container  w-full md:w-[90%] p-4 md:p-8 bg-[rgba(112,113,232,0.03)] border-2 border-[#7071E8] mt-4'>
           <div className='top-container flex items-center gap-8 justify-evenly '>
             <div className='address flex gap-2 items-center'>
               <div className='icon'>
@@ -95,7 +185,7 @@ function Dashboard() {
                   <IoLockClosedOutline className='text-xl font-bold text-[#7071E8]' />
                 </div>
                 <div className='text-xl text-[#7071E8] font-bold'>
-                  Locked $DAO
+                  Staked $DAO
                 </div>
               </div>{' '}
               <div className='bottom-container text-3xl font-bold  text-center'>
@@ -131,7 +221,7 @@ function Dashboard() {
           </div>
         </div>
         <div className='main-container  flex flex-col md:flex-row justify-between mt-4 w-[90%]'>
-          <div className='credibility-staking-container  bg-[rgba(112,113,232,0.03)] p-4 md:p-5 rounded-lg shadow-md max-w-full md:max-w-md mb-4 md:mb-0 '>
+          <div className='credibility-staking-container  bg-[rgba(112,113,232,0.03)] border-2 border-[#7071E8] p-4 md:p-5 shadow-md max-w-full md:max-w-md mb-4 md:mb-0 '>
             <h1 className='text-2xl font-bold mb-4 text-[#7071E8]'>
               Credibility Staking
             </h1>
@@ -142,10 +232,10 @@ function Dashboard() {
               and help them earn more too!
             </p>
 
-            <div className='flex justify-between mb-4'>
+            <div className='flex  mb-4'>
               <button
                 onClick={() => setIsStaking(true)}
-                className={`flex-1 p-2 rounded ${
+                className={` px-2  ${
                   isStaking
                     ? 'bg-[#7071E8] text-white'
                     : 'bg-white border-2 text-[#7071E8] border-[#7071E8]'
@@ -155,7 +245,7 @@ function Dashboard() {
               </button>
               <button
                 onClick={() => setIsStaking(false)}
-                className={`flex-1 p-2 rounded ml-2 ${
+                className={`  px-2 ${
                   !isStaking
                     ? 'bg-[#7071E8] text-white'
                     : 'bg-white border-2 text-[#7071E8] border-[#7071E8]'
@@ -248,7 +338,7 @@ function Dashboard() {
               </button>
             </div>
 
-            <div className='overflow-x-auto mt-4 border-2 p-2 border-[#7070e86d] '>
+            <div className='overflow-y-auto max-h-[300px] mt-4 border-2 p-2 border-[#7070e86d] '>
               <table className='w-full text-sm'>
                 <thead>
                   <tr className='border-b-2 border-[#7070e86d]  '>
@@ -267,11 +357,11 @@ function Dashboard() {
                     ) : (
                       <>
                         <th className='pb-2   text-[#7071E8]'>Address</th>
-                        <th className='pb-2   text-[#7071E8]'>
-                          Stakes received
+                        <th className='pb-2  text-left   text-[#7071E8]'>
+                          Stakes <br></br>received
                         </th>
                         <th className='pb-2   text-[#7071E8]'>
-                          Credibility gained
+                          Credibility <br></br>gained
                         </th>
                       </>
                     )}
@@ -282,7 +372,7 @@ function Dashboard() {
                     ? stakesData
                     : receivedData
                   ).map((data, index) => (
-                    <tr key={index} className='border-b w-4 text-md'>
+                    <tr key={index} className='border-b w-4  text-md'>
                       <td
                         className='py-2 flex items-center gap-2 '
                         onClick={() => copyToClipboard(data.address)}
@@ -290,7 +380,7 @@ function Dashboard() {
                         {formatAddress(data.address)}
                         <PiCopySimpleBold className='text-[#7071E8]' />
                       </td>
-                      <td className='py-2'>
+                      <td className='py-2 text-center'>
                         {activeTab === 'Your Stakes'
                           ? data.stake
                           : data.received}
@@ -306,21 +396,119 @@ function Dashboard() {
               </table>
             </div>
           </div>
-          <div className='claim-rewards-container w-full md:w-3/5 bg-[rgba(112,113,232,0.03)] p-4 '>
+          <div className='claim-rewards-container w-full md:w-2/5 bg-[rgba(112,113,232,0.03)] border-2 border-[#7071E8] p-4 '>
             <div className='credibiliy-rewards-container  mb-4'>
               <div className='heading text-2xl font-bold text-[#7071E8]'>
                 Credibilty Rewards
               </div>
               <div className='description'>claim your credibility rewards</div>
             </div>
-            <div className='claimreward-item-container p-2 w-1/2 flex  items-center justify-between '>
-              <div className='left-container text-xl flex self-center gap-2 border-2 border-[#7071E8] p-2 font-bold'>
-                claim your <span className='text-bold text-[#7071E8]'>100</span>
-                $DAO
+            <div className='claimreward-item-container p-2 w-full flex  items-center justify-start gap-4  '>
+              <div className='left-container text-xl bg-white  flex  gap-4  p-2 font-bold border-2 border-[#7071E8]'>
+                You have <span className='text-bold text-[#7071E8]'>100</span>
+                $DAO to be claimed
               </div>
-              <button className='right-container text-xl p-2 font-semibold text-white bg-[#7071E8]'>
+              <button className='right-container text-xl p-2 font-semibold text-white bg-[#7071E8] border-2 border-[#7071E8]'>
                 Claim
               </button>
+            </div>
+
+            <div className='credibiliy-rewards-container  mb-4 bg-white p-2'>
+              <div className='heading text-2xl font-bold text-[#7071E8]'>
+                How is credibility calculated?
+              </div>
+              <div className='description'>
+                When your friend stakes $25 DAO tokens on your address you get
+                √25 = 5 credibilty points.This is{' '}
+                <a
+                  target='_blank'
+                  href='https://towardsdatascience.com/what-is-quadratic-voting-4f81805d5a06'
+                  className='text-[#7071E8] font-semibold underline'
+                >
+                  Quadratic voting
+                </a>
+              </div>
+              <br></br>
+              <div className='description flex flex-col gap-2'>
+                Quadratic voting rewards more people supporting you over tokens
+                that are staked on you. For example if one friend stakes $100
+                DAO tokens on your address you get √100 = 10 credibilty
+                points,But if same $100 DAO tokens are staked by 4 different
+                friends at $25 each you get 4*√25 = 20 credibilty points.
+                <br></br>
+                <span className='text-[#7071E8]  font-semibold text-xl'>
+                  To increase your credibility get more friends to support you
+                </span>
+                <div className='overflow-y-auto max-h-[300px] mt-4 border-2 p-2 border-[#7070e86d] '>
+                  <table className='w-full text-sm'>
+                    <thead>
+                      <tr className='border-b-2 border-[#7070e86d]  '>
+                        {activeTab === 'Your Stakes' ? (
+                          <>
+                            <th className='pb-2 text-left  text-[#7071E8]'>
+                              Address
+                            </th>
+                            <th className='pb-2 text-left   text-[#7071E8]'>
+                              Your stake
+                            </th>
+                            <th className='pb-2   text-[#7071E8]'>
+                              Credibility given
+                            </th>
+                          </>
+                        ) : (
+                          <>
+                            <th className='pb-2   text-[#7071E8]'>Address</th>
+                            <th className='pb-2  text-left   text-[#7071E8]'>
+                              Stakes <br></br>received
+                            </th>
+                            <th className='pb-2   text-[#7071E8]'>
+                              Credibility <br></br>gained
+                            </th>
+                          </>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(activeTab === 'Your Stakes'
+                        ? stakesData
+                        : receivedData
+                      ).map((data, index) => (
+                        <tr key={index} className='border-b w-4  text-md'>
+                          <td
+                            className='py-2 flex items-center gap-2 '
+                            onClick={() => copyToClipboard(data.address)}
+                          >
+                            {formatAddress(data.address)}
+                            <PiCopySimpleBold className='text-[#7071E8]' />
+                          </td>
+                          <td className='py-2 text-center'>
+                            {activeTab === 'Your Stakes'
+                              ? data.stake
+                              : data.received}
+                          </td>
+                          <td className='py-2 text-center'>
+                            {activeTab === 'Your Stakes'
+                              ? data.credibility
+                              : data.credibilityGained}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className='relative h-screen w-1/5 bg-white '>
+            <div className='sticky top-0 bg-[#7071E8] text-white text-lg font-bold p-4 flex gap-2 items-center justify-center w-full z-10'>
+              <RiLiveLine className='text-xl' /> Live Feed
+            </div>
+            <div className='overflow-y-auto h-full border-2 border-[#7071E8]  '>
+              {feedItems.map((item, index) => (
+                <div key={index} className='flex min-w-max p-2'>
+                  <LiveFeedItem {...item} />
+                </div>
+              ))}
             </div>
           </div>
         </div>
