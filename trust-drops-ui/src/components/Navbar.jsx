@@ -10,7 +10,7 @@ function Navbar() {
   const [account, setAccount] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const { setAccountAddress } = useContext(DataContext);
+  const { setAccountAddress, sendMessage } = useContext(DataContext);
 
   const formatAddress = (address) => {
     const maxLength = 14;
@@ -90,7 +90,7 @@ function Navbar() {
           </button>
         )}
       </div>
-      {openModal && <LeaderBoardModal closeModal={closeModal} />}
+      {openModal && <LeaderBoardModal closeModal={closeModal} sendMessage={sendMessage} />}
     </div>
   );
 }

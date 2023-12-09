@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { MdOutlineLeaderboard, MdOutlineVerifiedUser } from 'react-icons/md';
-import { FaRegUserCircle, FaRegDotCircle } from 'react-icons/fa';
+import { FaRegUserCircle, FaRegDotCircle, FaRegSmileWink } from 'react-icons/fa';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import { TbUserUp } from 'react-icons/tb';
 import { PiCopySimpleBold } from 'react-icons/pi';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const LeaderBoardModal = ({ closeModal }) => {
+const LeaderBoardModal = ({ closeModal, sendMessage }) => {
+  console.log(typeof sendMessage); // Check the type of sendMessage
+  console.log(sendMessage); // Check the value of sendMessage
   // const [isModalOpen, setModalOpen] = useState(openModal);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -34,6 +38,13 @@ const LeaderBoardModal = ({ closeModal }) => {
       // Handle the error case
     }
   };
+
+  const showToastMessage = (winkedAt) => {
+    toast.success(`You just winked at ${winkedAt}`, {
+      position: toast.POSITION.BOTTOM_CENTER,
+    });
+  };
+
 
   const goToPage = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -85,6 +96,15 @@ const LeaderBoardModal = ({ closeModal }) => {
                         className='h-5 w-5 ml-2 text-[#7071E8] cursor-pointer'
                         onClick={() => copyToClipboard(item.wallet)}
                       />
+                      <FaRegSmileWink
+                        title='wink this user to request stake'
+                        className='text-center cursor-pointer text-[#7071E8] hover:bg-[#7071E8] rounded-full hover:text-white hover:scale-105 hover:border-2 hover:border-[#7071E8]'
+                        onClick={() => {
+                          sendMessage('winked', item.wallet, '0')
+                          showToastMessage(item.wallet)
+                        }}
+                      />
+                      <ToastContainer />
                     </td>
                     <td className=' py-3 px-4 text-center'>
                       {item.credibilityScore}

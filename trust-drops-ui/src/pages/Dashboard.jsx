@@ -16,78 +16,27 @@ import {
   EyeIcon,
 } from '@heroicons/react/outline';
 
-import {
-  createLightNode,
-  createDecoder,
-  createEncoder,
-  waitForRemotePeer,
-  Protocols,
-} from "@waku/sdk"
-import protobuf from 'protobufjs';
 import { DataContext } from '../context/DataContext';
 
-const ContentTopic = `/trustdrops/debug2/proto`
-const Encoder = createEncoder({ contentTopic: ContentTopic })
-const decoder = createDecoder(ContentTopic)
 
-const WinkContentTopic = `/trustdrops/debug2/wink/proto`
-const WinkEncoder = createEncoder({ contentTopic: WinkContentTopic })
-const WinkDecoder = createDecoder(WinkContentTopic)
-
-// Create a message structure using Protobuf
-const ChatMessage = new protobuf.Type("ChatMessage")
-  .add(new protobuf.Field("timestamp", 1, "uint64"))
-  .add(new protobuf.Field("voter", 2, "string"))
-  .add(new protobuf.Field("votes", 3, "string"))
-  .add(new protobuf.Field("message", 4, "string"))
-  .add(new protobuf.Field("votedTo", 5, "string"));
-
-const WinkChatMessage = new protobuf.Type("ChatMessageWink")
-  .add(new protobuf.Field("timestamp", 1, "uint64"))
-  .add(new protobuf.Field("winker", 2, "string"))
-  .add(new protobuf.Field("winkedTo", 3, "string"));
 
 function Dashboard() {
-  const activityData = [
-    {
-      type: 'winked',
-      from: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2154',
-      to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-    },
-    {
-      type: 'staked',
-      from: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2154',
-      to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-    },
-    {
-      type: 'unstaked',
-      from: '00xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2154',
-      to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-    },
-  ];
+  
   const [openModal, setOpenModal] = useState(false);
-  const [feedItems, setFeedItems] = useState(activityData);
   const [isStaking, setIsStaking] = useState(true);
   const [activeTab, setActiveTab] = useState('Your Stakes');
-
-  const [stakeForAddress, setStakeForAddress] = useState('');
-  const [stakeAmount, setStakeAmount] = useState('');
-
-  const [waku, setWaku] = useState(undefined)
-  const [wakuStatus, setWakuStatus] = useState("None")
-
-  const [messages, setMessages] = useState([]);
-
-
-  const [voteMessages, setVoteMessages] = useState([])
-  const [winkMessages, setWinkMessages] = useState([])
 
   const [tokenBalance, setTokenBalance] = useState(0)
   const [stakedBalance, setStakedBalance] = useState(0)
   const [credScore, setCredScore] = useState(0)
   const [allocatedTokens, setAllocatedTokens] = useState(0)
 
-  const { accountAddress, contract, erc20Contract } = useContext(DataContext);
+  const [stakeForAddress, setStakeForAddress] = useState('');
+  const [stakeAmount, setStakeAmount] = useState('');
+
+  const [wakuMessageType, setWakuMessageType] = useState("staked") // staked, unstaked, winked
+
+  const { accountAddress, contract, sendMessage, feedItems, erc20Contract } = useContext(DataContext);
 
   console.log("accountAddress", accountAddress)
 
@@ -106,22 +55,6 @@ function Dashboard() {
     { address: '0xadfe2...f15d2', stake: '25.00 $DAO', credibility: '5.00' },
     { address: '0xadfe2...f135d', stake: '16.00 $DAO', credibility: '4.00' },
   ];
-
-  useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      setFeedItems((prevItems) => [
-        ...prevItems,
-        {
-          type: 'winked',
-          from: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-          to: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xad201',
-        }, // New mock data
-      ]);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const LiveFeedItem = ({ type, from, to }) => {
     const iconSize = 'h-6 w-6';
@@ -193,6 +126,7 @@ function Dashboard() {
   };
 
   const handleStake = async () => {
+    try {
     let estimation = await erc20Contract.estimateGas.approve(contract.address, ethers.utils.parseUnits(stakeAmount));
     const approveTx = await erc20Contract.approve(contract.address, ethers.utils.parseUnits(stakeAmount), {
           gasPrice: estimation, 
@@ -205,8 +139,12 @@ function Dashboard() {
         });
     await stakeTx.wait()
 
-    console.log('Stake transaction hash', stakeTx.hash)
-    console.log('Stake function executed');
+      console.log('Stake transaction hash', stakeTx.hash)
+      console.log('Stake function executed');
+      sendMessage('staked', stakeForAddress, stakeAmount)
+    } catch (e) {
+      console.log(e)
+    }
   };
 
   const checkIfWalletIsConnected = async () => {
@@ -241,6 +179,7 @@ function Dashboard() {
 
     console.log('Stake transaction hash', unstakeTx.hash)
     console.log('Unstake function executed');
+    sendMessage('unstaked', stakeForAddress, stakeAmount)
   };
 
   const handleClaim = async() => {
@@ -264,165 +203,6 @@ function Dashboard() {
   const closeModal = () => {
     setOpenModal(false);
   };
-
-  function decodeMessage(wakuMessage) {
-    if (!wakuMessage.payload) return
-
-    const {
-      timestamp,
-      voter,
-      votes,
-      message,
-      votedTo
-    } = ChatMessage.decode(
-      wakuMessage.payload
-    )
-
-    if (!timestamp || !voter || !message || !votedTo || !votes) return
-
-    const time = new Date()
-    time.setTime(Number(timestamp))
-
-    // const utf8Text = bytesToUtf8(text);
-
-    return {
-      timestamp: timestamp,
-      message: message,
-      voter: voter,
-      votes: votes,
-      votedTo: votedTo
-    }
-  }
-
-  function decodeWinkMessage(wakuMessage) {
-    if (!wakuMessage.payload) return
-
-    const {
-      timestamp,
-      winker,
-      winkedTo
-    } = WinkChatMessage.decode(
-      wakuMessage.payload
-    )
-
-    if (!timestamp || !winker || !winkedTo) return
-
-    const time = new Date()
-    time.setTime(Number(timestamp))
-
-    // const utf8Text = bytesToUtf8(text);
-
-    return {
-      timestamp: timestamp,
-      winker: winker,
-      winkedTo: winkedTo
-    }
-  }
-
-  // Send the message using Light Push
-  async function sendMessage() {
-    const timestamp = new Date()
-    const time = timestamp.getTime()
-
-    // Encode to protobuf
-    const protoMsg = ChatMessage.create({
-      timestamp: time,
-      voter: accountAddress,
-      message: "inputMessage",
-      votedTo: stakeForAddress,
-      votes: stakeAmount,
-    })
-    const serialisedMessage = ChatMessage.encode(protoMsg).finish()
-
-    // Send the message using Light Push
-    await waku.lightPush.send(Encoder, {
-      payload: serialisedMessage,
-    });
-  }
-
-  async function sendWinkMessage() {
-    const timestamp = new Date()
-    const time = timestamp.getTime()
-
-    // Encode to protobuf
-    const protoMsg = WinkChatMessage.create({
-      timestamp: time,
-      winker: "Anonymous",
-      winkedTo: "Another_Anon",
-    })
-    const serialisedMessage = WinkChatMessage.encode(protoMsg).finish()
-
-    // Send the message using Light Push
-    await waku.lightPush.send(WinkEncoder, {
-      payload: serialisedMessage,
-    });
-  }
-
-
-  useEffect(() => {
-    console.log('Waku setup')
-    if (wakuStatus !== "None") return
-
-    setWakuStatus("Starting")
-    console.log('Waku status', wakuStatus)
-
-    createLightNode({ defaultBootstrap: true }).then((waku) => {
-      waku.start().then(() => {
-        setWaku(waku)
-        setWakuStatus("Connecting")
-      })
-    })
-  }, [waku, wakuStatus])
-
-  useEffect(() => {
-    if (!waku) return
-
-    // We do not handle disconnection/re-connection in this example
-    if (wakuStatus === "Connected") return
-
-    waitForRemotePeer(waku, [
-      Protocols.LightPush,
-      Protocols.Filter,
-      Protocols.Store,
-    ]).then(() => {
-      // We are now connected to a store node
-      setWakuStatus("Connected")
-    })
-  }, [waku, wakuStatus])
-
-  useEffect(() => {
-    if (wakuStatus !== "Connected") return
-    (async () => {
-      const startTime = new Date()
-      // 7 days/week, 24 hours/day, 60min/hour, 60secs/min, 100ms/sec
-      startTime.setTime(startTime.getTime() - 7 * 24 * 60 * 60 * 1000)
-
-      try {
-        for await (const messagesPromises of waku.store.queryGenerator(
-          [decoder],
-          {
-            timeFilter: { startTime, endTime: new Date() },
-            pageDirection: "forward",
-          }
-        )) {
-          const messages = await Promise.all(
-            messagesPromises.map(async (p) => {
-              const msg = await p
-              return decodeMessage(msg)
-            })
-          )
-
-          console.log({ messages })
-          setMessages((currentMessages) => {
-            return currentMessages.concat(messages.filter(Boolean).reverse())
-          })
-        }
-      } catch (e) {
-        console.log("Failed to retrieve messages", e)
-        setWakuStatus("Error Encountered")
-      }
-    })()
-  }, [waku, wakuStatus])
 
   async function loadUserData() {
     const tokenBalance = await erc20Contract.balanceOf(accountAddress);
@@ -795,9 +575,12 @@ function Dashboard() {
             <div className='sticky top-0 bg-[#7071E8] text-white text-lg font-bold p-4 flex gap-2 items-center justify-center w-full z-10'>
               <RiLiveLine className='text-xl' /> Live Feed
             </div>
-            <div className='overflow-y-auto h-full border-2 border-[#7071E8]  '>
+            <div className='overflow-y-auto h-full border-2 border-[#7071E8]  feed-items-container'>
               {feedItems.map((item, index) => (
-                <div key={index} className='flex min-w-max p-2'>
+                <div key={index} className={`feed-item transition-opacity duration-500 delay-${index + 1} ${index === 0 ? 'opacity-100' : ''}`}
+                // add transition here
+
+                >
                   <LiveFeedItem {...item} />
                 </div>
               ))}
@@ -805,7 +588,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      {openModal && <LeaderBoardModal closeModal={closeModal} />}
+      {openModal && <LeaderBoardModal closeModal={closeModal} sendMessage={sendMessage} />}
     </div>
   );
 }
