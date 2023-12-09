@@ -4,14 +4,17 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/IAnonAadhaarVerifier.sol";
 
 contract TrustDrops is Ownable {
     IERC20 public mandToken;
+    address public anonAadhaarVerifierAddr;
     uint public networkConstant = 2;
     uint public totalReputation;
     uint public lastDistributionTime;
     uint public constant DISTRIBUTION_INTERVAL = 1 days;
     uint public constant DISTRIBUTION_DENOMINATOR = 200;
+    uint public constant LOGIN_AIRDROP_AMOUNT = 100 * 1e18;
 
     struct Stake {
         uint amount;
@@ -27,14 +30,30 @@ contract TrustDrops is Ownable {
     mapping(address => mapping(address => Stake)) public stakes;
     mapping(address => uint) public reputation;
     mapping(address => uint) public lastClaimTime;
+    mapping(uint256 => bool) public alreadyVerified;
+    mapping(address => bool) public alreadyLoggedIn;
 
     event Staked(address indexed staker, address indexed candidate, uint amount);
     event Unstaked(address indexed staker, address indexed candidate, uint amount);
     event NetworkConstantChanged(uint oldConstant, uint newConstant);
     event TokensClaimed(address indexed candidate, uint amount);
 
-    constructor(address _mandTokenAddress) Ownable(msg.sender) {
+    constructor(address _mandTokenAddress, address _anonAadhaarVerifierAddr) Ownable(msg.sender) {
         mandToken = IERC20(_mandTokenAddress);
+        anonAadhaarVerifierAddr = _anonAadhaarVerifierAddr;
+        lastDistributionTime = block.timestamp;
+    }
+
+    function verifyAadhaar(uint256[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[34] calldata _pubSignals) external {
+        require(alreadyVerified[_pubSignals[0]] == false, "Aadhaar already verified");
+        // bool valid = IAnonAadhaarVerifier(anonAadhaarVerifierAddr).verifyProof(_pA, _pB, _pC, _pubSignals);
+        // if (valid) {
+            alreadyVerified[_pubSignals[0]] = true;
+            alreadyLoggedIn[msg.sender] = true;
+            mandToken.transfer(msg.sender, LOGIN_AIRDROP_AMOUNT);
+        // } else {
+            // revert("Invalid aadhaar proof");
+        // }
     }
 
     function stake(address candidate, uint amount) external {
