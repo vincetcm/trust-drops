@@ -244,7 +244,7 @@ function Dashboard() {
                 </div>
               </div>{' '}
               <div className='bottom-container text-3xl font-bold text-center'>
-                {tokenBalance}
+                {parseFloat(tokenBalance).toFixed(2)}
               </div>
             </div>{' '}
             <div className='available-mand'>
@@ -257,7 +257,7 @@ function Dashboard() {
                 </div>
               </div>{' '}
               <div className='bottom-container text-3xl font-bold  text-center'>
-                {stakedBalance}
+                {parseFloat(stakedBalance).toFixed(2)}
               </div>
             </div>{' '}
             <div className='available-mand'>
@@ -273,19 +273,6 @@ function Dashboard() {
                 {credScore}
               </div>
             </div>{' '}
-            <div className='available-mand ' onClick={() => openLeaderBoard}>
-              <div className='top-container flex items-center gap-2'>
-                <div className='icon'>
-                  <MdOutlineLeaderboard className='text-xl font-bold text-[#7071E8]' />
-                </div>
-                <div className=' text-xl text-[#7071E8] font-bold'>
-                  Your rank
-                </div>
-              </div>{' '}
-              <div className='bottom-container underline text-3xl font-bold  text-center'>
-                # 1
-              </div>
-            </div>
           </div>
         </div>
         <div className='main-container  flex flex-col md:flex-row justify-between mt-4 w-[90%]'>
@@ -475,7 +462,7 @@ function Dashboard() {
             </div>
             <div className='claimreward-item-container p-2 w-full flex  items-center justify-start gap-4  '>
               <div className='left-container text-xl bg-white  flex  gap-4  p-2 font-bold border-2 border-[#7071E8]'>
-                You have <span className='text-bold text-[#7071E8]'>{allocatedTokens}</span>
+                You have <span className='text-bold text-[#7071E8]'>{parseFloat(allocatedTokens).toFixed(2)}</span>
                 $DAO to be claimed
               </div>
               <button className='right-container text-xl p-2 font-semibold text-white bg-[#7071E8]'
@@ -515,35 +502,17 @@ function Dashboard() {
                   <table className='w-full text-sm'>
                     <thead>
                       <tr className='border-b-2 border-[#7070e86d]  '>
-                        {activeTab === 'Your Stakes' ? (
-                          <>
-                            <th className='pb-2 text-left  text-[#7071E8]'>
-                              Address
-                            </th>
-                            <th className='pb-2 text-left   text-[#7071E8]'>
-                              Your stake
-                            </th>
-                            <th className='pb-2   text-[#7071E8]'>
-                              Credibility given
-                            </th>
-                          </>
-                        ) : (
-                          <>
-                            <th className='pb-2   text-[#7071E8]'>Address</th>
-                            <th className='pb-2  text-left   text-[#7071E8]'>
-                              Stakes <br></br>received
-                            </th>
-                            <th className='pb-2   text-[#7071E8]'>
-                              Credibility <br></br>gained
-                            </th>
-                          </>
-                        )}
+                        <th className='pb-2   text-[#7071E8]'>Address</th>
+                        <th className='pb-2  text-left   text-[#7071E8]'>
+                          Stakes <br></br>received
+                        </th>
+                        <th className='pb-2   text-[#7071E8]'>
+                          Credibility <br></br>gained
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {(activeTab === 'Your Stakes'
-                        ? stakesData
-                        : receivedData
+                      {(receivedData
                       ).map((data, index) => (
                         <tr key={index} className='border-b w-4  text-md'>
                           <td
@@ -554,14 +523,10 @@ function Dashboard() {
                             <PiCopySimpleBold className='text-[#7071E8]' />
                           </td>
                           <td className='py-2 text-center'>
-                            {activeTab === 'Your Stakes'
-                              ? data.stake
-                              : data.received}
+                            {data.received}
                           </td>
                           <td className='py-2 text-center'>
-                            {activeTab === 'Your Stakes'
-                              ? data.credibility
-                              : data.credibilityGained}
+                            {data.credibilityGained}
                           </td>
                         </tr>
                       ))}
