@@ -9,9 +9,8 @@ import "hardhat/console.sol";
 contract TrustDrops is Ownable {
     IERC20 public mandToken;
     address public anonAadhaarVerifierAddr;
-    uint public constant NETWORK_CONSTANT = 2; // Fixed network constant
     uint public totalReputation;
-    uint public constant DISTRIBUTION_INTERVAL = 1 minutes;
+    uint public constant DISTRIBUTION_INTERVAL = 5 minutes;
     uint public constant DISTRIBUTION_DENOMINATOR = 200;
     uint public constant LOGIN_AIRDROP_AMOUNT = 100 * 1e18;
 
@@ -32,7 +31,7 @@ contract TrustDrops is Ownable {
     mapping(uint256 => bool) public alreadyVerified;
     mapping(address => bool) public alreadyLoggedIn;
 
-    event Staked(address indexed staker, address indexed candidate, uint amount);
+    event Staked(address indexed staker, address indexed candidate, uint amount, uint cred);
     event Unstaked(address indexed staker, address indexed candidate, uint amount);
     event TokensClaimed(address indexed candidate, uint amount);
 
@@ -63,12 +62,15 @@ contract TrustDrops is Ownable {
         }
 
         totalReputation -= calculateReputation(stakes[msg.sender][candidate].amount);
+        uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
         stakes[msg.sender][candidate].amount += amount;
         totalStakedByUser[msg.sender] += amount;
         updateReputation(msg.sender, candidate);
-        totalReputation += calculateReputation(stakes[msg.sender][candidate].amount);
+        uint newTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
+        totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
 
-        emit Staked(msg.sender, candidate, amount);
+
+        emit Staked(msg.sender, candidate, amount, newTotalReputation - oldTotalReputation);
     }
 
     function updateReputation(address staker, address candidate) internal {

@@ -9,6 +9,7 @@ import { TbUserUp } from 'react-icons/tb';
 import { FaRegSmileWink } from 'react-icons/fa';
 import { RiLiveLine } from 'react-icons/ri';
 import {ethers} from 'ethers';
+import trustdropABI from '../abis/trustdropABI.json';
 
 import {
   LockClosedIcon,
@@ -30,6 +31,8 @@ function Dashboard() {
   const [stakedBalance, setStakedBalance] = useState(0)
   const [credScore, setCredScore] = useState(0)
   const [allocatedTokens, setAllocatedTokens] = useState(0)
+  const [stakesData, setStakesData] = useState([])
+  const [receivedData, setReceivedData] = useState([])
 
   const [stakeForAddress, setStakeForAddress] = useState('');
   const [stakeAmount, setStakeAmount] = useState('');
@@ -41,20 +44,20 @@ function Dashboard() {
   console.log("accountAddress", accountAddress)
 
 
-  const stakesData = [
-    {
-      address: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-      stake: '100.00 $DAO',
-      credibility: '10.00',
-    },
-    {
-      address: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-      stake: '400.00 $DAO',
-      credibility: '40.00',
-    },
-    { address: '0xadfe2...f15d2', stake: '25.00 $DAO', credibility: '5.00' },
-    { address: '0xadfe2...f135d', stake: '16.00 $DAO', credibility: '4.00' },
-  ];
+  // const stakesData = [
+  //   {
+  //     address: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
+  //     stake: '100.00 $DAO',
+  //     credibility: '10.00',
+  //   },
+  //   {
+  //     address: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
+  //     stake: '400.00 $DAO',
+  //     credibility: '40.00',
+  //   },
+  //   { address: '0xadfe2...f15d2', stake: '25.00 $DAO', credibility: '5.00' },
+  //   { address: '0xadfe2...f135d', stake: '16.00 $DAO', credibility: '4.00' },
+  // ];
 
   const LiveFeedItem = ({ type, from, to }) => {
     const iconSize = 'h-6 w-6';
@@ -103,13 +106,13 @@ function Dashboard() {
     );
   };
 
-  const receivedData = [
-    {
-      address: '0xadfe2...f15d4',
-      received: '120.00 $DAO',
-      credibilityGained: '15.00',
-    },
-  ];
+  // const receivedData = [
+  //   {
+  //     address: '0xadfe2...f15d4',
+  //     received: '120.00 $DAO',
+  //     credibilityGained: '15.00',
+  //   },
+  // ];
   const formatAddress = (address) => {
     const maxLength = 18;
     return address.length > maxLength
@@ -205,6 +208,43 @@ function Dashboard() {
   };
 
   async function loadUserData() {
+    // const ownStakesEventFilter = await contract.filters.Staked(accountAddress);
+    // const ownStakesEvents = await contract.queryFilter(ownStakesEventFilter);
+    // console.log("check ownStakesEvents - ", ownStakesEvents);
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const currentBlock = await provider.getBlockNumber();
+      const ownStakesEvents = contract.filters.Staked(accountAddress);
+      const ownStakesEventLogs = await contract.queryFilter(ownStakesEvents, currentBlock - 10000, currentBlock);
+      console.log("check ownStakesEventLogs - ", ownStakesEventLogs);
+      
+      const stakesData = ownStakesEventLogs.map((parsedLog) => {
+        return {address: parsedLog.args.candidate, stake: parseFloat(ethers.utils.formatUnits(parsedLog.args.amount)).toFixed(2), credibility: parseFloat(parsedLog.args.cred).toFixed(2)}
+      })
+      setStakesData(stakesData);
+      console.log("check stakesData - ", stakesData);
+    } catch(err) {
+      console.log("check err stakesData -  ", err)
+    }
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const currentBlock = await provider.getBlockNumber();
+      const ownStakesEvents = contract.filters.Staked(null, accountAddress);
+      const ownStakesEventLogs = await contract.queryFilter(ownStakesEvents, currentBlock - 10000, currentBlock);
+      console.log("check ownStakesEventLogs - ", ownStakesEventLogs);
+      
+      const receivedData = ownStakesEventLogs.map((parsedLog) => {
+        return {address: parsedLog.args.staker, received: parseFloat(ethers.utils.formatUnits(parsedLog.args.amount)).toFixed(2), credibilityGained: parseFloat(parsedLog.args.cred).toFixed(2)}
+      })
+      setReceivedData(receivedData);
+      console.log("check receivedData - ", receivedData);
+    } catch(err) {
+      console.log("check err receivedData -  ", err)
+    }
+
+
     const tokenBalance = await erc20Contract.balanceOf(accountAddress);
     setTokenBalance(ethers.utils.formatUnits(tokenBalance));
 
@@ -216,6 +256,7 @@ function Dashboard() {
 
     const allocation = await contract.calculateIndividualAllocation(accountAddress);
     setAllocatedTokens(ethers.utils.formatUnits(allocation));
+
   }
 
   useEffect(() => {
