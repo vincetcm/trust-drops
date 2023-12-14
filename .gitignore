@@ -2,3 +2,5 @@
 
 trust-drops-ui/.env
 contracts/.env
+# Local Netlify folder
+.netlify

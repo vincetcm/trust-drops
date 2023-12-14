@@ -46,14 +46,14 @@ function VerificationPage() {
   }
 
   useEffect(() => {
-    if (anonAadhaar && contract) {
+    if (anonAadhaar && accountAddress) {
       console.log('Anon Aadhaar status: ', anonAadhaar.status);
       (async () => {
         const alreadyLoggedIn = await contract.alreadyLoggedIn(accountAddress);
         if (alreadyLoggedIn) {
           navigate('/dashboard');
-        }
-        if ((anonAadhaar.status === 'logged-in')) {
+          return;
+        }else if ((anonAadhaar.status === 'logged-in')) {
             const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
               anonAadhaar.pcd
             );
@@ -64,7 +64,7 @@ function VerificationPage() {
         }
       })();
     }
-  }, [anonAadhaar, contract]);
+  }, [anonAadhaar, accountAddress]);
 
   return (
     <div className='flex flex-col items-center w-screen pt-8 font-mono'>

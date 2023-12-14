@@ -61,7 +61,6 @@ contract TrustDrops is Ownable {
             candidates[candidate].hasStaked[msg.sender] = true;
         }
 
-        totalReputation -= calculateReputation(stakes[msg.sender][candidate].amount);
         uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
         stakes[msg.sender][candidate].amount += amount;
         totalStakedByUser[msg.sender] += amount;

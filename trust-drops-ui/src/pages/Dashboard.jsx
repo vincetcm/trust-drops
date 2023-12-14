@@ -254,15 +254,24 @@ function Dashboard() {
     const credScore = await contract.reputation(accountAddress);
     setCredScore(parseInt(credScore));
 
-    const allocation = await contract.calculateIndividualAllocation(accountAddress);
-    setAllocatedTokens(ethers.utils.formatUnits(allocation));
+    try {
+      const allocation = await contract.calculateIndividualAllocation(accountAddress);
+      setAllocatedTokens(ethers.utils.formatUnits(allocation));
+    } catch(err) {
+      console.log("check err setAllocatedTokens -  ", err)
+    }
 
   }
 
   useEffect(() => {
     checkIfWalletIsConnected();
-    loadUserData();
   }, []);
+
+  useEffect(() => {
+    if (contract && accountAddress) {
+      loadUserData();
+    }
+  }, [accountAddress]);
 
   return (
     <div className='  flex flex-col justify-center w-full md:w-screen font-mono'>

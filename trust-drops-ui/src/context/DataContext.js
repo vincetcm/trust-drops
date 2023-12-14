@@ -41,14 +41,14 @@ const DataProvider = ({ children }) => {
   console.log('DataProvider');
 
   const contractABI = trustdropABI.abi
-  const CONTRACT_ADDRESS = "0x041b1C41aC7Cd27E4275751d2eedF01823fe5C9A"
+  const CONTRACT_ADDRESS = "0x458FC77414fe2dda159e3ED186a882d0161CCc85"
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
 
   const erc20ABI = daoTokenABI.abi
-  const erc20Address = "0x3527a63e8F074cd902BE993584a8ACbeB70C0B00"
+  const erc20Address = "0x9f35500A22ADba69B5a40F6031e3bBDB81Bd6Fd3"
   const erc20Contract = new ethers.Contract(erc20Address, erc20ABI, signer);
 
   function decodeMessage(wakuMessage) {
@@ -98,10 +98,17 @@ const DataProvider = ({ children }) => {
     const serialisedMessage = ChatMessage.encode(protoMsg).finish()
 
     // Send the message using Light Push
-    const res = await waku.lightPush.send(Encoder, {
-      payload: serialisedMessage,
-    });
-    console.log('Message sent', res)
+    let retry = 0;
+    while(retry < 5) {
+      const res = await waku.lightPush.send(Encoder, {
+        payload: serialisedMessage,
+      });
+      console.log('Message sent', res)
+      if (res.recipients.length > 0) {
+        break;
+      }
+      retry+=1;
+    }
   }
 
   const fetchMessages = async () => {
