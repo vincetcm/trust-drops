@@ -29,7 +29,7 @@ function VerificationPage() {
 
       const verifyTx = await contract.verifyAadhaar(a, b, c, Input, 
         {
-          gasPrice: estimation, 
+          gasPrice: estimation
         });
 
       const verifyReceipt = await verifyTx.wait();
@@ -49,18 +49,23 @@ function VerificationPage() {
     if (anonAadhaar && accountAddress) {
       console.log('Anon Aadhaar status: ', anonAadhaar.status);
       (async () => {
-        const alreadyLoggedIn = await contract.alreadyLoggedIn(accountAddress);
-        if (alreadyLoggedIn) {
-          navigate('/dashboard');
-          return;
-        }else if ((anonAadhaar.status === 'logged-in')) {
-            const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
-              anonAadhaar.pcd
-            );
+        try {
+          const alreadyLoggedIn = await contract.alreadyLoggedIn(accountAddress);
+          console.log("alreadyLoggedIn - ", alreadyLoggedIn)
+          if (alreadyLoggedIn) {
+            navigate('/dashboard');
+            return;
+          }else if ((anonAadhaar.status === 'logged-in')) {
+              const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
+                anonAadhaar.pcd
+              );
 
-            console.log("check a, b, c and Input below -- ");
-            await verifyAadhaarHandler(a, b, c, Input)
-            console.log(a, b, c, Input);
+              console.log("check a, b, c and Input below -- ");
+              await verifyAadhaarHandler(a, b, c, Input)
+              console.log(a, b, c, Input);
+          }
+        } catch(e) {
+          console.log(e)
         }
       })();
     }

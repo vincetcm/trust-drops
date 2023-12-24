@@ -41,14 +41,14 @@ const DataProvider = ({ children }) => {
   console.log('DataProvider');
 
   const contractABI = trustdropABI.abi
-  const CONTRACT_ADDRESS = "0x458FC77414fe2dda159e3ED186a882d0161CCc85"
+  const CONTRACT_ADDRESS = "0xDB08bf5bcA3351ea80899CD15ab829963fD2dfc3"
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
 
   const erc20ABI = daoTokenABI.abi
-  const erc20Address = "0x9f35500A22ADba69B5a40F6031e3bBDB81Bd6Fd3"
+  const erc20Address = "0x3229bbbec3dF4B0BDfA6B4ab99D177aA7d7E10A1"
   const erc20Contract = new ethers.Contract(erc20Address, erc20ABI, signer);
 
   function decodeMessage(wakuMessage) {

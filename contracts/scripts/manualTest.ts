@@ -2,13 +2,17 @@ import { ethers } from "hardhat";
 
 async function main() {
 
-  const trustDropAddress = "0xE8addD62feD354203d079926a8e563BC1A7FE81e";
-  const daoTokenAddress = "0xf090f16dEc8b6D24082Edd25B1C8D26f2bC86128";
+  const trustDropAddress = "0xabDcb6Cb15497AbebE1AdDb2f74e09a30bABcF6A";
+  const daoTokenAddress = "0xaf47154382cd2Bc5bbABc34628b84d0474c6Fc89";
 
   const trustDropsFactory = await ethers.getContractFactory("TrustDrops");
   const trustDrops = trustDropsFactory.attach(trustDropAddress);
   const daoTokenFactory = await ethers.getContractFactory("DAOToken");
   const daoToken = daoTokenFactory.attach(daoTokenAddress);
+
+  let alreadyLoggedIn = await trustDrops.alreadyLoggedIn("0x8DaAae078300Ee5B86e46D098abc644c1616460D");
+  console.log("alreadyLoggedIn", alreadyLoggedIn);
+  return;
 
   const a = ["12460614951749606740501097818281730098061785595547104139870274171743997833900","3568632853958752578220504855675957207202175595901115642791871483631475850820"]
   const b = [["11892295831296192735735222041731684759634476657978336897560049983317203976450","16168013026631615738122512427276525543138061161612020416199137138062484789960"],["17221573548125612224725767369946531630615979465095503377919353129484490023145","16504315286688790020260199073816338467426746956868573044772989298289013791467"]]

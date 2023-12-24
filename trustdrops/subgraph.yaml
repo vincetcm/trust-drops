@@ -1,0 +1,33 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TrustDrops
+    network: mumbai
+    source:
+      address: "0xDB08bf5bcA3351ea80899CD15ab829963fD2dfc3"
+      abi: TrustDrops
+      startBlock: 43956039
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - OwnershipTransferred
+        - Staked
+        - TokensClaimed
+        - Unstaked
+      abis:
+        - name: TrustDrops
+          file: ./abis/TrustDrops.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Staked(indexed address,indexed address,uint256,uint256)
+          handler: handleStaked
+        - event: TokensClaimed(indexed address,uint256)
+          handler: handleTokensClaimed
+        - event: Unstaked(indexed address,indexed address,uint256)
+          handler: handleUnstaked
+      file: ./src/trust-drops.ts
