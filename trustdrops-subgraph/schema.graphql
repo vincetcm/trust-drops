@@ -1,6 +1,17 @@
-type ExampleEntity @entity {
+type User @entity {
   id: Bytes!
-  count: BigInt!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
+  address: Bytes!
+  credScoreAccrued: BigInt!
+  credScoreDistributed: BigInt!
+  tokenBalance: BigInt!
+  tokenStaked: BigInt!
+}
+
+type Stake @entity {
+  id: String!
+  staker: User!
+  candidate: User!
+  amount: BigInt!
+  credScoreGiven: BigInt!
+  timestamp: BigInt!
 }
