@@ -108,6 +108,10 @@ export class Unstaked__Params {
   get amount(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
+
+  get cred(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
 }
 
 export class TrustDrops extends ethereum.SmartContract {

@@ -6,6 +6,7 @@ import {
   TokensClaimed,
   Unstaked
 } from "../generated/TrustDrops/TrustDrops"
+import { Transfer } from "../generated/DAOToken/DAOToken"
 
 export function createOwnershipTransferredEvent(
   previousOwner: Address,
@@ -77,7 +78,8 @@ export function createTokensClaimedEvent(
 export function createUnstakedEvent(
   staker: Address,
   candidate: Address,
-  amount: BigInt
+  amount: BigInt,
+  cred: BigInt
 ): Unstaked {
   let unstakedEvent = changetype<Unstaked>(newMockEvent())
 
@@ -92,6 +94,32 @@ export function createUnstakedEvent(
   unstakedEvent.parameters.push(
     new ethereum.EventParam("amount", ethereum.Value.fromUnsignedBigInt(amount))
   )
+  unstakedEvent.parameters.push(
+    new ethereum.EventParam("cred", ethereum.Value.fromUnsignedBigInt(cred))
+  )
 
   return unstakedEvent
+}
+
+
+export function createTokenTransferEvent(
+  from: Address,
+  to: Address,
+  amount: BigInt
+): Transfer {
+  let tokenTransferEvent = changetype<Transfer>(newMockEvent())
+
+  tokenTransferEvent.parameters = new Array()
+
+  tokenTransferEvent.parameters.push(
+    new ethereum.EventParam("from", ethereum.Value.fromAddress(from))
+  )
+  tokenTransferEvent.parameters.push(
+    new ethereum.EventParam("to", ethereum.Value.fromAddress(to))
+  )
+  tokenTransferEvent.parameters.push(
+    new ethereum.EventParam("amount", ethereum.Value.fromUnsignedBigInt(amount))
+  )
+
+  return tokenTransferEvent
 }
