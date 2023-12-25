@@ -1,0 +1,8 @@
+{
+  "base-testnet": {
+    "TrustDrops": {
+      "address": "0x458FC77414fe2dda159e3ED186a882d0161CCc85",
+      "startBlock": 13633363
+    }
+  }
+}
