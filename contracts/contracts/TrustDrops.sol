@@ -32,7 +32,7 @@ contract TrustDrops is Ownable {
     mapping(address => bool) public alreadyLoggedIn;
 
     event Staked(address indexed staker, address indexed candidate, uint amount, uint cred);
-    event Unstaked(address indexed staker, address indexed candidate, uint amount);
+    event Unstaked(address indexed staker, address indexed candidate, uint amount, uint cred);
     event TokensClaimed(address indexed candidate, uint amount);
 
     constructor(address _mandTokenAddress, address _anonAadhaarVerifierAddr) Ownable(msg.sender) {
@@ -118,14 +118,15 @@ contract TrustDrops is Ownable {
 
         require(_stake.amount >= amount, "Insufficient staked amount");
 
-        totalReputation -= calculateReputation(stakes[msg.sender][candidate].amount);
+        uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
         _stake.amount -= amount;
         totalStakedByUser[msg.sender] -= amount;
         updateReputation(msg.sender, candidate);
-        totalReputation += calculateReputation(stakes[msg.sender][candidate].amount);
+        uint newTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
+        totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
 
         mandToken.transfer(msg.sender, amount);
 
-        emit Unstaked(msg.sender, candidate, amount);
+        emit Unstaked(msg.sender, candidate, amount, oldTotalReputation - newTotalReputation);
     }
 }
