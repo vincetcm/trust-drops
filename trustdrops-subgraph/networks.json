@@ -1,8 +1,12 @@
 {
-  "base-testnet": {
+  "polygon-mumbai": {
     "TrustDrops": {
-      "address": "0x458FC77414fe2dda159e3ED186a882d0161CCc85",
-      "startBlock": 13633363
+      "address": "0x737eD7E748c17828903a86E92a801e601651E3B7",
+      "startBlock": 43992751
+    },
+    "DAOToken": {
+      "address": "0x2651B3e1440aD9899DadA0A1dc61b40544D5271a",
+      "startBlock": 43992742
     }
   }
 }

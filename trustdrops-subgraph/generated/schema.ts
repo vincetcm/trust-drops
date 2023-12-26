@@ -183,6 +183,19 @@ export class Stake extends Entity {
     this.set("candidate", Value.fromBytes(value));
   }
 
+  get stakeType(): string {
+    let value = this.get("stakeType");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set stakeType(value: string) {
+    this.set("stakeType", Value.fromString(value));
+  }
+
   get amount(): BigInt {
     let value = this.get("amount");
     if (!value || value.kind == ValueKind.NULL) {
@@ -196,8 +209,8 @@ export class Stake extends Entity {
     this.set("amount", Value.fromBigInt(value));
   }
 
-  get credScoreGiven(): BigInt {
-    let value = this.get("credScoreGiven");
+  get credScore(): BigInt {
+    let value = this.get("credScore");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -205,20 +218,7 @@ export class Stake extends Entity {
     }
   }
 
-  set credScoreGiven(value: BigInt) {
-    this.set("credScoreGiven", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
+  set credScore(value: BigInt) {
+    this.set("credScore", Value.fromBigInt(value));
   }
 }

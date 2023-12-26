@@ -31,7 +31,7 @@ export function handleStaked(event: Staked): void {
 
   // update staker's cred score distributed
   staker.credScoreDistributed = staker.credScoreDistributed.plus(event.params.cred)
-  staker.tokenBalance = staker.tokenBalance.minus(event.params.amount)
+  staker.tokenStaked = staker.tokenStaked.plus(event.params.amount)
   staker.save()
 
   // update candidate's cred score received
@@ -40,53 +40,55 @@ export function handleStaked(event: Staked): void {
 
   // update Stakes entity
   // id is staker-candidate-currentTimestamp
-  // let id = event.params.staker.toHex() + '-' + event.params.candidate.toHex() + '-' + event.block.timestamp.toString()
-  let id = event.transaction.hash.toHex()
-  let stake = new Stake(id)
-  stake.staker = staker.id
-  stake.candidate = candidate.id
-  stake.amount = event.params.amount
-  stake.timestamp = event.block.timestamp
-  stake.credScoreGiven = event.params.cred
+  let id = event.params.staker.toHex() + '-' + event.params.candidate.toHex()
+  // let id = event.transaction.hash.toHex()
+  let stake = Stake.load(id)
+  if (stake == null) {
+    stake = new Stake(id)
+    stake.staker = staker.id
+    stake.candidate = candidate.id
+    stake.amount = BigInt.fromI32(0)
+    stake.credScore = BigInt.fromI32(0)
+  }
+  stake.stakeType = 'STAKE'
+  stake.amount = stake.amount.plus(event.params.amount)
+  stake.credScore = stake.credScore.plus(event.params.cred)
+  
   stake.save()
-}
-
-export function handleTokensClaimed(event: TokensClaimed): void {
-  // create user if not already created
-  let user = User.load(event.params.candidate)
 }
 
 export function handleUnstaked(event: Unstaked): void {
   let candidate = User.load(event.params.candidate)
   if (candidate == null) {
-    candidate = new User(event.params.candidate)
-    candidate.save()
+    throw new Error('Candidate is not a user')
   } 
 
   // check if staker is already a user
   let staker = User.load(event.params.staker)
   if (staker == null) {
-    staker = new User(event.params.staker)
-    staker.save()
+    // throw error
+    throw new Error('Staker is not a user')
   }
 
-  // TODO: Update amount with cred when cred is implemented
   // update staker's cred score distributed
   staker.credScoreDistributed = staker.credScoreDistributed.minus(event.params.cred)
+  staker.tokenStaked = staker.tokenStaked.minus(event.params.amount)
   staker.save()
 
   // update candidate's cred score received
   candidate.credScoreAccrued = candidate.credScoreAccrued.minus(event.params.cred)
   candidate.save()
 
-  // update Stakes entity
-  // id is staker-candidate-currentTimestamp
-  let id = event.params.staker.toHex() + '-' + event.params.candidate.toHex() + '-' + event.block.timestamp.toString()
-  let stake = new Stake(id)
-  stake.staker = staker.id
-  stake.candidate = candidate.id
-  stake.amount = event.params.amount
-  stake.timestamp = event.block.timestamp
-  stake.credScoreGiven = event.params.cred
+  let id = event.params.staker.toHex() + '-' + event.params.candidate.toHex()
+  // let id = event.transaction.hash.toHex()
+  let stake = Stake.load(id)
+  if (stake == null) {
+    throw new Error('Stake does not exist')
+  }
+
+  stake.stakeType = 'UNSTAKE'
+  stake.amount = stake.amount.minus(event.params.amount)
+  stake.credScore = stake.credScore.minus(event.params.cred)
+  
   stake.save()
 }

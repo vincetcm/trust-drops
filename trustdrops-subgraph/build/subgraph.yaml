@@ -1,6 +1,6 @@
 specVersion: 0.0.5
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: TrustDrops
@@ -18,13 +18,13 @@ dataSources:
         - Stake
       abis:
         - name: TrustDrops
-          file: ./abis/TrustDrops.json
+          file: TrustDrops/abis/TrustDrops.json
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
         - event: Unstaked(indexed address,indexed address,uint256,uint256)
           handler: handleUnstaked
-      file: ./src/trust-drops.ts
+      file: TrustDrops/TrustDrops.wasm
   - kind: ethereum
     name: DAOToken
     network: mumbai
@@ -40,8 +40,8 @@ dataSources:
         - Transfer
       abis:
         - name: DAOToken
-          file: ./abis/DAOToken.json
+          file: DAOToken/abis/DAOToken.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTokenTransfer
-      file: ./src/dao-token.ts
+      file: DAOToken/DAOToken.wasm
