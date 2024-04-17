@@ -15,7 +15,7 @@ function Navbar() {
   const [openModal, setOpenModal] = useState(false);
   const [activeRoute, setActiveRoute] = useState('');
 
-  const { setAccountAddress, sendMessage } = useContext(DataContext);
+  // const { setAccountAddress, sendMessage } = useContext(DataContext);
 
   const formatAddress = (address) => {
     const maxLength = 14;
@@ -29,43 +29,43 @@ function Navbar() {
   const closeModal = () => {
     setOpenModal(false);
   };
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send('eth_requestAccounts', []);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-        setAccount(address);
-        setAccountAddress(address);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      window.alert('Please install MetaMask!');
-    }
-  };
+  // const connectWallet = async () => {
+  //   if (window.ethereum) {
+  //     try {
+  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //       await provider.send('eth_requestAccounts', []);
+  //       const signer = provider.getSigner();
+  //       const address = await signer.getAddress();
+  //       setAccount(address);
+  //       setAccountAddress(address);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   } else {
+  //     window.alert('Please install MetaMask!');
+  //   }
+  // };
 
-  useEffect(() => {
-    const fetchAccount = async () => {
-      if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        try {
-          // Get the list of accounts
-          const accounts = await provider.listAccounts();
-          if (accounts.length > 0) {
-            const address = accounts[0];
-            setAccount(address);
-            setAccountAddress(address);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchAccount = async () => {
+  //     if (window.ethereum) {
+  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //       try {
+  //         // Get the list of accounts
+  //         const accounts = await provider.listAccounts();
+  //         if (accounts.length > 0) {
+  //           const address = accounts[0];
+  //           setAccount(address);
+  //           setAccountAddress(address);
+  //         }
+  //       } catch (error) {
+  //         console.error(error);
+  //       }
+  //     }
+  //   };
 
-    fetchAccount();
-  }, []);
+  //   fetchAccount();
+  // }, []);
   useEffect(() => {
     if (pathname == '/') {
       setActiveRoute('home');
@@ -142,7 +142,7 @@ function Navbar() {
         )} */}
       </div>
       {openModal && (
-        <LeaderBoardModal closeModal={closeModal} sendMessage={sendMessage} />
+        <LeaderBoardModal closeModal={closeModal} />
       )}
     </div>
   );

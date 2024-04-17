@@ -23,7 +23,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       accounts: {
-        mnemonic: "test test test test test test test test test test test test",
+        mnemonic: "hidden horror advice immense social phone matter world salmon blouse boy tunnel",
       },
       live: false,
       saveDeployments: true,

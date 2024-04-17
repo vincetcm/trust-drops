@@ -1,0 +1,12 @@
+{
+    "network": {
+        "chainId": "0x7060",
+        "chainName": "Mande Network",
+        "nativeCurrency": {
+            "name": "Mande",
+            "symbol": "MAND",
+            "decimals": 18
+        },
+        "rpcUrls": ["https://json-rpc.mande.evm.ra.intdev.noisnemyd.xyz"]
+    }
+}
