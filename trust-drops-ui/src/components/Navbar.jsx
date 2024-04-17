@@ -78,7 +78,7 @@ function Navbar() {
     }
   }, [pathname]);
   return (
-    <div className='nav-container font-mono flex  justify-center  bg-black h-[10%] '>
+    <div className='nav-container font-mono flex  justify-center  bg-black h-[10vh] '>
       <div className='flex-1 flex justify-between items-center max-w-[90%] '>
         <Link
           className='text-3xl font-semibold text-white flex items-center gap-2 tracking-wider'

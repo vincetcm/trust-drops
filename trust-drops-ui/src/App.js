@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
@@ -10,8 +15,11 @@ import { useEffect } from 'react';
 import Airdrop from './pages/Airdrop.jsx';
 import LeaderBoard from './pages/LeaderBoard.jsx';
 
+import { AnimatePresence } from 'framer-motion';
+
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   // const [anonAadhaar] = useAnonAadhaar();
 
   let retriveItem = JSON.parse(localStorage.getItem('status'));
@@ -24,16 +32,19 @@ function App() {
     // }
   }, []);
   return (
-    <div className='App h-screen bg-black '>
+    <div className='App  bg-black '>
       <DataProvider>
         {/* <Router> */}
         <Navbar />
-        <Routes>
-          <Route path='/' element={<LandingPage />} />
-          <Route path='/staking' element={<Dashboard />} />
-          <Route path='/leaderboard' element={<LeaderBoard />} />
-          <Route path='/airdrop' element={<Airdrop />} />
-        </Routes>
+
+        <AnimatePresence>
+          <Routes>
+            <Route path='/' element={<LandingPage />} />
+            <Route path='/staking' element={<Dashboard />} />
+            <Route path='/leaderboard' element={<LeaderBoard />} />
+            <Route path='/airdrop' element={<Airdrop />} />
+          </Routes>
+        </AnimatePresence>
         {/* </Router> */}
       </DataProvider>
     </div>
