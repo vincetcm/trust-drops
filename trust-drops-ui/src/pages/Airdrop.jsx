@@ -36,7 +36,7 @@ function Airdrop() {
               Connect wallet
             </div>
           </div>
-          <hr className='w-[90%] flex self-center  my-[10px] h-[1px] bg-black border-[0px]' />
+          <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
           <div className='flex justify-between'>
             <div className='flex gap-2 items-center  flex-1   '>
               <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
