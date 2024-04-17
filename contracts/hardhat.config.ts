@@ -37,6 +37,12 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY
       ],
     },
+    mande: {
+      url: process.env.MANDE_RPC,
+      accounts: [
+        process.env.PRIVATE_KEY
+      ],
+    },
     mumbai: {
       url: process.env.MUMBAI_RPC,
       live: true,

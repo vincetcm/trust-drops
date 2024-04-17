@@ -1,0 +1,56 @@
+version: '3.9'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dev.Dockerfile
+    command: '/app/scripts/docker/local-run.sh'
+    ports:
+      - '8080:8080'
+      - '9229:9229'
+    depends_on:
+      db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    env_file: .env.local
+    volumes:
+      - './src:/app/src'
+      - './scripts/db:/app/scripts/db'
+    networks:
+      - node-network
+  
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+        - node-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+
+  db:
+    image: mongo:4.4.6
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - node-network
+
+volumes:
+  dbdata:
+
+networks:
+  node-network:
+    driver: bridge
