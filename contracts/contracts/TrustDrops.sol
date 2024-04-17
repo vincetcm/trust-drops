@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interfaces/IAnonAadhaarVerifier.sol";
-import "hardhat/console.sol";
 
 contract TrustDrops is Ownable {
-    IERC20 public mandToken;
-    address public anonAadhaarVerifierAddr;
     uint public totalReputation;
-    uint public constant DISTRIBUTION_INTERVAL = 5 minutes;
-    uint public constant DISTRIBUTION_DENOMINATOR = 200;
-    uint public constant LOGIN_AIRDROP_AMOUNT = 100 * 1e18;
+    uint public seedFund;
+    uint public totalAllocationLocked;
+    uint public constant APPROVAL_AIRDROP_AMOUNT = 30 * 1e18;
+    address public approver;
 
     struct Stake {
+        uint amount;
+    }
+
+    struct Cred {
         uint amount;
     }
 
@@ -27,34 +27,51 @@ contract TrustDrops is Ownable {
     mapping(address => mapping(address => Stake)) public stakes;
     mapping(address => uint) public totalStakedByUser;
     mapping(address => uint) public reputation;
-    mapping(address => uint) public lastClaimTime;
-    mapping(uint256 => bool) public alreadyVerified;
-    mapping(address => bool) public alreadyLoggedIn;
+    mapping(address => bool) public approvedAddress;
+    mapping(bytes32 => bool) public approvedId;
+    mapping(address => uint) public allocation;
+    address[] public users;
+    mapping(address => bool) public userAdded;
 
     event Staked(address indexed staker, address indexed candidate, uint amount, uint cred);
     event Unstaked(address indexed staker, address indexed candidate, uint amount, uint cred);
     event TokensClaimed(address indexed candidate, uint amount);
 
-    constructor(address _mandTokenAddress, address _anonAadhaarVerifierAddr) Ownable(msg.sender) {
-        mandToken = IERC20(_mandTokenAddress);
-        anonAadhaarVerifierAddr = _anonAadhaarVerifierAddr;
+    constructor() Ownable(msg.sender) {
+        approver = msg.sender;
     }
 
-    function verifyAadhaar(uint256[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[34] calldata _pubSignals) external {
-        require(alreadyVerified[_pubSignals[0]] == false, "Aadhaar already verified");
-        bool valid = IAnonAadhaarVerifier(anonAadhaarVerifierAddr).verifyProof(_pA, _pB, _pC, _pubSignals);
-        if (valid) {
-            alreadyVerified[_pubSignals[0]] = true;
-            alreadyLoggedIn[msg.sender] = true;
-            mandToken.transfer(msg.sender, LOGIN_AIRDROP_AMOUNT);
-        } else {
-            revert("Invalid aadhaar proof");
+    function updateApprover(address _newApprover) external onlyOwner {
+        approver = _newApprover;
+    }
+
+    function depositSeedFunds() external payable {
+        seedFund += msg.value;
+    }
+
+    function approve(address _user, bytes32 _id) external {
+        require(msg.sender == approver, "TrustDrops::Not authorised");
+        require(approvedAddress[_user] == false, "TrustDrops::Address already approved");
+        require(approvedId[_id] == false, "TrustDrops::Id already approved");
+        approvedAddress[_user] = true;
+        approvedId[_id] = true;
+
+        users.push(msg.sender);
+        userAdded[msg.sender] = true;
+        (bool sent, ) = (msg.sender).call{value: APPROVAL_AIRDROP_AMOUNT}("");
+        seedFund -= APPROVAL_AIRDROP_AMOUNT;
+        require(sent, "TrustDrops::Failed to send Ether");
+    }
+
+    function stake(address candidate) payable external {
+        require(approvedAddress[msg.sender], "TrustDrops::Not authorised");
+        uint amount = msg.value;
+        require(amount > 0, "TrustDrops::Amount must be positive");
+
+        if (!userAdded[candidate]) {
+            users.push(candidate);
+            userAdded[candidate] = true;
         }
-    }
-
-    function stake(address candidate, uint amount) external {
-        require(amount > 0, "Amount must be positive");
-        mandToken.transferFrom(msg.sender, address(this), amount);
 
         if (!candidates[candidate].hasStaked[msg.sender]) {
             candidates[candidate].stakers.push(msg.sender);
@@ -64,17 +81,11 @@ contract TrustDrops is Ownable {
         uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
         stakes[msg.sender][candidate].amount += amount;
         totalStakedByUser[msg.sender] += amount;
-        updateReputation(msg.sender, candidate);
         uint newTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
+        reputation[candidate] = reputation[candidate] - oldTotalReputation + newTotalReputation;
         totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
 
-
         emit Staked(msg.sender, candidate, amount, newTotalReputation - oldTotalReputation);
-    }
-
-    function updateReputation(address staker, address candidate) internal {
-        Stake storage _stake = stakes[staker][candidate];
-        reputation[candidate] = calculateReputation(_stake.amount);
     }
 
     function calculateReputation(uint x) internal pure returns (uint) {
@@ -88,45 +99,41 @@ contract TrustDrops is Ownable {
         return y/1e9;
     }
 
-    function calculateIndividualAllocation(address candidate) public view returns (uint) {
-        if (block.timestamp >= lastClaimTime[msg.sender] + DISTRIBUTION_INTERVAL) {
-            uint totalTokens = mandToken.balanceOf(address(this));
-            uint tokensForDistribution = totalTokens / DISTRIBUTION_DENOMINATOR;
-            uint candidateReputation = reputation[candidate];
-            uint candidateAllocation = tokensForDistribution * candidateReputation / totalReputation;
-
-            return candidateAllocation;
-        }
-        return 0;
-    }
 
     function claimTokens() external {
-        require(block.timestamp >= lastClaimTime[msg.sender] + DISTRIBUTION_INTERVAL, "Already claimed for the latest distribution");
+        uint reward = allocation[msg.sender];
+        allocation[msg.sender] = 0;
+        (bool sent, ) = (msg.sender).call{value: reward}("");
+        totalAllocationLocked -= reward;
+        require(sent, "TrustDrops::Failed to send Ether");
 
-        uint tokensToDistribute = calculateIndividualAllocation(msg.sender);
-        require(tokensToDistribute > 0, "No tokens to claim");
-
-        lastClaimTime[msg.sender] = block.timestamp;
-        mandToken.transfer(msg.sender, tokensToDistribute);
-
-        emit TokensClaimed(msg.sender, tokensToDistribute);
+        emit TokensClaimed(msg.sender, reward);
     }
 
     function unstake(address candidate, uint amount) external {
-        require(amount > 0, "Amount must be positive");
+        require(amount > 0, "TrustDrops::Amount must be positive");
         Stake storage _stake = stakes[msg.sender][candidate];
-
-        require(_stake.amount >= amount, "Insufficient staked amount");
+        require(_stake.amount >= amount, "TrustDrops::Insufficient staked amount");
 
         uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
         _stake.amount -= amount;
         totalStakedByUser[msg.sender] -= amount;
-        updateReputation(msg.sender, candidate);
         uint newTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
+        reputation[candidate] = reputation[candidate] + newTotalReputation - oldTotalReputation;
         totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
 
-        mandToken.transfer(msg.sender, amount);
+        (bool sent, ) = (msg.sender).call{value: amount}("");
+        require(sent, "TrustDrops::Failed to send Ether");
 
         emit Unstaked(msg.sender, candidate, amount, oldTotalReputation - newTotalReputation);
+    }
+
+    receive() external payable {
+        // This function is executed when a contract receives plain Ether (without data)
+        for (uint i=0; i<users.length; i++) {
+            uint allocatedFund = msg.value * reputation[users[i]] / totalReputation;
+            allocation[users[i]] += allocatedFund;
+            totalAllocationLocked += allocatedFund;
+        }
     }
 }
