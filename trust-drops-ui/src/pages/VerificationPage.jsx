@@ -2,15 +2,15 @@
 import React, { useEffect, useContext } from 'react';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { LogInWithAnonAadhaar, useAnonAadhaar } from 'anon-aadhaar-react';
+// import { LogInWithAnonAadhaar, useAnonAadhaar } from 'anon-aadhaar-react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardCopyIcon, ChevronDownIcon } from '@heroicons/react/outline';
 import { IoFingerPrintOutline } from 'react-icons/io5';
-import { exportCallDataGroth16FromPCD } from "anon-aadhaar-pcd";
+// import { exportCallDataGroth16FromPCD } from 'anon-aadhaar-pcd';
 import { DataContext } from '../context/DataContext';
 
 function VerificationPage() {
-  const [anonAadhaar] = useAnonAadhaar();
+  // const [anonAadhaar] = useAnonAadhaar();
   const navigate = useNavigate();
   const onDrop = useCallback((acceptedFiles) => {
     // Do something with the dropped files
@@ -24,13 +24,17 @@ function VerificationPage() {
 
   const verifyAadhaarHandler = async (a, b, c, Input) => {
     try {
-      const estimation = await contract.estimateGas.verifyAadhaar(a, b, c, Input);
-      console.log("check estimation here - ", estimation);
+      const estimation = await contract.estimateGas.verifyAadhaar(
+        a,
+        b,
+        c,
+        Input
+      );
+      console.log('check estimation here - ', estimation);
 
-      const verifyTx = await contract.verifyAadhaar(a, b, c, Input, 
-        {
-          gasPrice: estimation
-        });
+      const verifyTx = await contract.verifyAadhaar(a, b, c, Input, {
+        gasPrice: estimation,
+      });
 
       const verifyReceipt = await verifyTx.wait();
       console.log(verifyReceipt);
@@ -43,34 +47,33 @@ function VerificationPage() {
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   useEffect(() => {
-    if (anonAadhaar && accountAddress) {
-      console.log('Anon Aadhaar status: ', anonAadhaar.status);
-      (async () => {
-        try {
-          const alreadyLoggedIn = await contract.alreadyLoggedIn(accountAddress);
-          console.log("alreadyLoggedIn - ", alreadyLoggedIn)
-          if (alreadyLoggedIn) {
-            navigate('/dashboard');
-            return;
-          }else if ((anonAadhaar.status === 'logged-in')) {
-              const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
-                anonAadhaar.pcd
-              );
-
-              console.log("check a, b, c and Input below -- ");
-              await verifyAadhaarHandler(a, b, c, Input)
-              console.log(a, b, c, Input);
-          }
-        } catch(e) {
-          console.log(e)
-        }
-      })();
+    if (accountAddress) {
+      // (async () => {
+      //   try {
+      //     const alreadyLoggedIn = await contract.alreadyLoggedIn(accountAddress);
+      //     console.log("alreadyLoggedIn - ", alreadyLoggedIn)
+      //     if (alreadyLoggedIn) {
+      //       navigate('/dashboard');
+      //       return;
+      //     }else if ((anonAadhaar.status === 'logged-in')) {
+      //         const { a, b, c, Input } = await exportCallDataGroth16FromPCD(
+      //           anonAadhaar.pcd
+      //         );
+      //         console.log("check a, b, c and Input below -- ");
+      //         await verifyAadhaarHandler(a, b, c, Input)
+      //         console.log(a, b, c, Input);
+      //     }
+      //   } catch(e) {
+      //     console.log(e)
+      //   }
+      // })();
     }
-  }, [anonAadhaar, accountAddress]);
+  }, [accountAddress]);
 
+  // const newLocal = <LogInWithAnonAadhaar />;
   return (
     <div className='flex flex-col items-center w-screen pt-8 font-mono'>
       <div className='verification-container p-8 w-[90%] bg-[rgba(112,113,232,0.03)]'>
@@ -168,8 +171,8 @@ function VerificationPage() {
           </div>
         </div>
         <div className='upload-container flex flex-col gap-4  items-center '>
-          <LogInWithAnonAadhaar />
-          <p>verification status: {anonAadhaar?.status}</p>
+          {/* {newLocal} */}
+          {/* <p>verification status: {anonAadhaar?.status}</p> */}
           {/* <div className='heading-text'>Upload your aadhar pdf</div>
           <div className='dragndrop-container flex flex-col items-center'>
             <div

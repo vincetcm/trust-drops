@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { GiDropletSplash } from 'react-icons/gi';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeaderBoardModal from './LeaderBoardModal';
 import { DataContext } from '../context/DataContext';
+import Mande from '../assets/mandeLogo.svg';
+
 const ethers = require('ethers');
 
 function Navbar() {
+  const { pathname } = useLocation();
+  console.log('pathname', pathname);
   const navigate = useNavigate();
   const [account, setAccount] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [activeRoute, setActiveRoute] = useState('');
 
   const { setAccountAddress, sendMessage } = useContext(DataContext);
 
@@ -61,36 +66,84 @@ function Navbar() {
 
     fetchAccount();
   }, []);
-
+  useEffect(() => {
+    if (pathname == '/') {
+      setActiveRoute('home');
+    } else if (pathname == '/staking') {
+      setActiveRoute('staking');
+    } else if (pathname == '/leaderboard') {
+      setActiveRoute('leaderboard');
+    } else if (pathname == '/airdrop') {
+      setActiveRoute('airdrop');
+    }
+  }, [pathname]);
   return (
-    <div className='nav-container font-mono flex p-4 justify-center bg-[#7071E8]'>
-      <div className='flex-1 flex justify-between items-center max-w-[90%]'>
-        <div className='text-3xl font-semibold text-white flex items-center gap-2'>
-          <GiDropletSplash />
-          Trustdrops
+    <div className='nav-container font-mono flex  justify-center  bg-black h-[10%] '>
+      <div className='flex-1 flex justify-between items-center max-w-[90%] '>
+        <Link
+          className='text-3xl font-semibold text-white flex items-center gap-2 tracking-wider'
+          to={'/'}
+        >
+          <img src={Mande}></img> MANDE
+        </Link>
+        {/* {account ? ( */}
+        <div className='navbar-left-container gap-8 flex'>
+          <Link
+            to={'/'}
+            className={`${
+              activeRoute == 'home' ? 'text-[#7071E8] font-bold' : 'text-white'
+            }   text-[18px]`}
+            // onClick={openLeaderBoard}
+          >
+            Home
+          </Link>
+          <Link
+            to={'/airdrop'}
+            className={`${
+              activeRoute == 'airdrop'
+                ? 'text-[#7071E8] font-bold'
+                : 'text-white'
+            }   text-[18px]`}
+            // onClick={openLeaderBoard}
+          >
+            Airdrop
+          </Link>
+          <Link
+            to={'/staking'}
+            className={`${
+              activeRoute == 'staking'
+                ? 'text-[#7071E8] font-bold'
+                : 'text-white'
+            }   text-[18px]`}
+          >
+            Credibility staking
+          </Link>
+          <Link
+            to={'/leaderboard'}
+            className={`${
+              activeRoute == 'leaderboard'
+                ? 'text-[#7071E8] font-bold'
+                : 'text-white'
+            }   text-[18px]`}
+          >
+            Leaderboard
+          </Link>
+          {/* <div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl flex items-center'>
+            {formatAddress(account)}
+          </div> */}
         </div>
-        {account ? (
-          <div className='navbar-left-container gap-4 flex'>
-            <button
-              className='text-white px-4 py-2 border-2 border-white text-xl  bg-[#7071E8] text-center  '
-              onClick={openLeaderBoard}
-            >
-              LeaderBoard
-            </button>
-            <div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl flex items-center'>
-              {formatAddress(account)}
-            </div>
-          </div>
-        ) : (
+        {/* ) : (
           <button
             className='text-white px-4 py-2 border-2 border-white text-xl  bg-[#7071E8]'
             onClick={connectWallet}
           >
             Connect wallet
           </button>
-        )}
+        )} */}
       </div>
-      {openModal && <LeaderBoardModal closeModal={closeModal} sendMessage={sendMessage} />}
+      {openModal && (
+        <LeaderBoardModal closeModal={closeModal} sendMessage={sendMessage} />
+      )}
     </div>
   );
 }
