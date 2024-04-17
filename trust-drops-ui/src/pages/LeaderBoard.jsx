@@ -140,13 +140,13 @@ function LeaderBoard() {
                     disabled={currentPage === 1}
                     className='w-full p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0] '
                   >
-                    <span className=''>Previous</span>
+                    <span className=''>&lt;&lt;</span>
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => (
                     <button
                       key={i}
                       onClick={() => goToPage(i + 1)}
-                      className={`w-full p-2 border-t border-b border-r text-base  hover:bg-gray-100 text-gray-600 bg-white ${
+                      className={`w-full p-2 border-r text-base  hover:bg-gray-100 text-gray-600 bg-white ${
                         currentPage === i + 1 ? 'text-blue-600 bg-blue-100' : ''
                       }`}
                     >
@@ -156,9 +156,9 @@ function LeaderBoard() {
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className='w-full p-2  text-base  text-[#7071E8] bg-gray-900 hover:bg-gray-800'
+                    className='w-full p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0]'
                   >
-                    <span className=''>Next</span>
+                    <span className=''>&gt;&gt;</span>
                   </button>
                 </div>
               </div>

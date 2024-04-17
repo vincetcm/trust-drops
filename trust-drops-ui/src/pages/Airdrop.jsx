@@ -18,7 +18,7 @@ function Airdrop() {
               <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                 1
               </div>
-              <div className='text-container'>Connect with twitter/X</div>
+              <div className='text-container  text-black'>Connect with twitter/X</div>
             </div>
             <div className='button-container bg-black px-4 py-2 text-center  w-[200px]'>
               Connect twitter
@@ -30,7 +30,7 @@ function Airdrop() {
               <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                 2
               </div>
-              <div className='text-container'>Connect your wallet</div>
+              <div className='text-container text-black'>Connect your wallet</div>
             </div>
             <div className='button-container bg-black px-4 text-center py-2  w-[200px]'>
               Connect wallet
@@ -42,7 +42,7 @@ function Airdrop() {
               <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                 3
               </div>
-              <div className='text-container'>
+              <div className='text-container text-black'>
                 Link your wallet with twitter/X
               </div>
             </div>
