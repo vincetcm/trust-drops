@@ -1,8 +1,11 @@
 // Everything transactions
-import { IUser } from '@components/user/user.interface';
+import { IUpdateUser, IUser } from '@components/user/user.interface';
 import config from '@config/config';
 import amqp from 'amqplib/callback_api.js';
 import { Web3 } from 'web3';
+import {
+  update
+} from '@components/user/user.service';
 const web3 = new Web3(process.env.HTTP_RPC_URL);
 
 class TransactionsQueue {
@@ -80,6 +83,7 @@ class TransactionsQueue {
         .sendSignedTransaction(signed.rawTransaction)
         .on('receipt', async (receipt) => {
           console.log('Approval receipt - ', receipt);
+          update(user, {approved: true} as IUpdateUser);
         })
         .on('error', async (err) => {
           console.log('Approval failure - ', err);
