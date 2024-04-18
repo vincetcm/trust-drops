@@ -91,11 +91,11 @@ function LeaderBoard() {
                         </th>
                         <th className='text-left py-3 px-4 uppercase font-semibold text-sm '>
                           <FaRegDotCircle className='h-4 w-4 mr-2 inline-block ml-2' />
-                          Available $DAO
+                          Available $MAND
                         </th>
                         <th className='text-left py-3 px-4 uppercase font-semibold text-sm'>
                           <IoLockClosedOutline className='h-4 mr-2 w-4 inline-block ml-2' />
-                          Locked $DAO
+                          Locked $MAND
                         </th>
                         <th className='text-left py-3 px-4 uppercase font-semibold text-sm'>
                           <TbUserUp className='h-4 mr-2 w-4 inline-block ml-2' />
