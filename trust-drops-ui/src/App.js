@@ -32,7 +32,7 @@ function App() {
     // }
   }, []);
   return (
-    <div className='App  bg-black '>
+    <div className='App h-screen  bg-black '>
       <DataProvider>
         {/* <Router> */}
         <Navbar />

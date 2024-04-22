@@ -482,6 +482,54 @@ function Dashboard() {
                         </td>
                       </tr>
                     ))}
+                    {/* <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '}
+                    <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '}
+                    <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '}
+                    <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '} */}
                   </tbody>
                 </table>
               </div>
@@ -570,7 +618,7 @@ function Dashboard() {
                     How is credibility calculated?
                   </div>
                   <div className='description'>
-                    When your friend stakes $25 DAO tokens on your address you
+                    When your friend stakes 25 $MAND tokens on your address you
                     get √25 = 5 credibilty points.This is{' '}
                     <a
                       target='_blank'
@@ -584,8 +632,8 @@ function Dashboard() {
                   <div className='description flex flex-col gap-2'>
                     Quadratic voting rewards more people supporting you over
                     tokens that are staked on you. For example if one friend
-                    stakes $100 DAO tokens on your address you get √100 = 10
-                    credibilty points,But if same $100 DAO tokens are staked by
+                    stakes 100 $MAND tokens on your address you get √100 = 10
+                    credibilty points,But if same 100 $MAND tokens are staked by
                     4 different friends at $25 each you get 4*√25 = 20
                     credibilty points.
                     <br></br>

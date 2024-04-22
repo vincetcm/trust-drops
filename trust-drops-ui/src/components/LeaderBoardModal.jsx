@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { MdOutlineLeaderboard, MdOutlineVerifiedUser } from 'react-icons/md';
-import { FaRegUserCircle, FaRegDotCircle, FaRegSmileWink } from 'react-icons/fa';
+import {
+  FaRegUserCircle,
+  FaRegDotCircle,
+  FaRegSmileWink,
+} from 'react-icons/fa';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import { TbUserUp } from 'react-icons/tb';
 import { PiCopySimpleBold } from 'react-icons/pi';
@@ -45,7 +49,6 @@ const LeaderBoardModal = ({ closeModal, sendMessage }) => {
     });
   };
 
-
   const goToPage = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -74,11 +77,11 @@ const LeaderBoardModal = ({ closeModal, sendMessage }) => {
                   </th>
                   <th className='text-left py-3 px-4 uppercase font-semibold text-sm '>
                     <FaRegDotCircle className='h-4 w-4 mr-2 inline-block ml-2' />
-                    Available $DAO
+                    Available $MAND
                   </th>
                   <th className='text-left py-3 px-4 uppercase font-semibold text-sm'>
                     <IoLockClosedOutline className='h-4 mr-2 w-4 inline-block ml-2' />
-                    Locked $DAO
+                    Locked $MAND
                   </th>
                   <th className='text-left py-3 px-4 uppercase font-semibold text-sm'>
                     <TbUserUp className='h-4 mr-2 w-4 inline-block ml-2' />
@@ -100,8 +103,8 @@ const LeaderBoardModal = ({ closeModal, sendMessage }) => {
                         title='wink this user to request stake'
                         className='text-center cursor-pointer text-[#7071E8] hover:bg-[#7071E8] rounded-full hover:text-white hover:scale-105 hover:border-2 hover:border-[#7071E8]'
                         onClick={() => {
-                          sendMessage('winked', item.wallet, '0')
-                          showToastMessage(item.wallet)
+                          sendMessage('winked', item.wallet, '0');
+                          showToastMessage(item.wallet);
                         }}
                       />
                       <ToastContainer />
