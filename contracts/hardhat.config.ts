@@ -39,6 +39,7 @@ const config: HardhatUserConfig = {
     },
     mande: {
       url: process.env.MANDE_RPC,
+      gasPrice: 50000000000,
       accounts: [
         process.env.PRIVATE_KEY
       ],
