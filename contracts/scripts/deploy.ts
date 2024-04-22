@@ -7,6 +7,12 @@ async function main() {
   console.log(
     `Trust drops deployed to ${trustDrops.target}`
   );
+
+  let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('300')});
+  await seedFundTx.wait();
+  console.log(
+    `Seed fund transferred`
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
