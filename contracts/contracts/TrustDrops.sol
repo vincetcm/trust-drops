@@ -33,8 +33,8 @@ contract TrustDrops is Ownable {
     address[] public users;
     mapping(address => bool) public userAdded;
 
-    event Staked(address indexed staker, address indexed candidate, uint amount, uint cred);
-    event Unstaked(address indexed staker, address indexed candidate, uint amount, uint cred);
+    event Staked(address indexed staker, address indexed candidate, uint amount, uint cred, uint timestamp);
+    event Unstaked(address indexed staker, address indexed candidate, uint amount, uint cred, uint timestamp);
     event TokensClaimed(address indexed candidate, uint amount);
 
     constructor() Ownable(msg.sender) {
@@ -85,7 +85,7 @@ contract TrustDrops is Ownable {
         reputation[candidate] = reputation[candidate] - oldTotalReputation + newTotalReputation;
         totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
 
-        emit Staked(msg.sender, candidate, amount, newTotalReputation - oldTotalReputation);
+        emit Staked(msg.sender, candidate, amount, newTotalReputation - oldTotalReputation, block.timestamp);
     }
 
     function calculateReputation(uint x) internal pure returns (uint) {
@@ -101,6 +101,7 @@ contract TrustDrops is Ownable {
 
 
     function claimTokens() external {
+        require(allocation[msg.sender] > 0, "TrustDrops::No reward allocation");
         uint reward = allocation[msg.sender];
         allocation[msg.sender] = 0;
         (bool sent, ) = (msg.sender).call{value: reward}("");
@@ -125,7 +126,7 @@ contract TrustDrops is Ownable {
         (bool sent, ) = (msg.sender).call{value: amount}("");
         require(sent, "TrustDrops::Failed to send Ether");
 
-        emit Unstaked(msg.sender, candidate, amount, oldTotalReputation - newTotalReputation);
+        emit Unstaked(msg.sender, candidate, amount, oldTotalReputation - newTotalReputation, block.timestamp);
     }
 
     receive() external payable {

@@ -158,10 +158,8 @@ function Dashboard() {
 
   const handleClaim = async () => {
     console.log('Claim function executed');
-    const estimation = await trustdropContract.estimateGas.claimTokens();
-    const claimTx = await trustdropContract.claimTokens({
-      gasPrice: estimation,
-    });
+    // const estimation = await trustdropContract.estimateGas.claimTokens();
+    const claimTx = await trustdropContract.claimTokens();
 
     await claimTx.wait();
 
@@ -194,7 +192,7 @@ function Dashboard() {
       );
       console.log('check ownStakesEventLogs - ', ownStakesEventLogs);
 
-      const stakesData = ownStakesEventLogs.map((parsedLog) => {
+      const stakesData = ownStakesEventLogs.toReversed().map((parsedLog) => {
         return {
           address: parsedLog.args.candidate,
           stake: parseFloat(
@@ -220,7 +218,7 @@ function Dashboard() {
       );
       console.log('check ownStakesEventLogs - ', ownStakesEventLogs);
 
-      const receivedData = ownStakesEventLogs.map((parsedLog) => {
+      const receivedData = ownStakesEventLogs.toReversed().map((parsedLog) => {
         return {
           address: parsedLog.args.staker,
           received: parseFloat(
@@ -233,6 +231,36 @@ function Dashboard() {
       console.log('check receivedData - ', receivedData);
     } catch (err) {
       console.log('check err receivedData -  ', err);
+    }
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const currentBlock = await provider.getBlockNumber();
+      let allStakesEvents = await trustdropContract.queryFilter(trustdropContract.filters.Staked(), currentBlock - 10000, currentBlock)
+      let allUnstakesEvents = await trustdropContract.queryFilter(trustdropContract.filters.Unstaked(), currentBlock - 10000, currentBlock)
+      let allEvents = [...allStakesEvents, ...allUnstakesEvents] // concatenate arrays using spread operator
+      allEvents.sort((a, b) => parseFloat(`${a.blockNumber}.${a.transactionIndex}`) - parseFloat(`${b.blockNumber}.${b.transactionIndex}`))
+      console.log("allEvents - ", allEvents);
+
+      // const combinedEvents = [allStakesEvents.topics.concat(allUnstakesEvents.topics)]
+      // const allCombinedEventLogs = await trustdropContract.queryFilter({
+      //   address: trustdropContract.address,
+      //   topics: combinedEvents,
+      //   fromBlock: currentBlock - 10000,
+      //   toBlock: currentBlock
+      // });
+      // console.log("allCombinedEventLogs - ", allCombinedEventLogs);
+
+      const combinedLogData = allEvents.toReversed().map((parsedLog) => {
+        return {
+          staker: parsedLog.args.staker,
+          amount: parsedLog.args.amount.toString(),
+          timestamp: "",
+        };
+      });
+      setLiveFeedData(combinedLogData);
+    } catch (err) {
+      console.log('check err combined data -  ', err);
     }
 
     const stakedTokens = await trustdropContract.totalStakedByUser(accountAddress);
@@ -275,7 +303,32 @@ function Dashboard() {
           amount,
           timestamp: ""
         };
-        setLiveFeedData([...liveFeedData, feedData]);
+        console.log("pre data - ", liveFeedData);
+        // setLiveFeedData([...liveFeedData, feedData]);
+        setLiveFeedData(prevState => [feedData, ...prevState]);
+        console.log("post data - ", liveFeedData);
+
+        if (staker == accountAddress) {
+          const stakesData = {
+            address: candidate,
+            stake: parseFloat(
+              ethers.utils.formatUnits(amount)
+            ).toFixed(2),
+            credibility: parseFloat(cred).toFixed(2),
+          };
+          setStakesData(prevState => [stakesData, ...prevState]);
+        }
+
+        if (candidate == accountAddress) {
+          const receivedData = {
+            address: staker,
+            received: parseFloat(
+              ethers.utils.formatUnits(amount)
+            ).toFixed(2),
+            credibilityGained: parseFloat(cred).toFixed(2),
+          };
+          setReceivedData(prevState => [receivedData, ...prevState]);
+        }
       });
       trustdropContract.on("Unstaked", (staker, candidate, amount, cred) => {
         feedData = {
@@ -294,7 +347,7 @@ function Dashboard() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
-      <div className='  w-full  font-mono bg-black  text-white h-[90vh]'>
+      <div className='  w-full  font-mono bg-black  text-white pb-5'>
         <div className='flex flex-col items-center  '>
           <div className='dashboard-container  w-[90%]  mt-4 '>
             <div className='top-container flex flex-col '>
@@ -535,7 +588,7 @@ function Dashboard() {
               </div>
             </div>
             <div className='main-container-cr w-[70%] max-h-full flex flex-col gap-4 '>
-              <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 h-[80%] flex flex-col  gap-4  '>
+              <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4  '>
                 {/* <div className='claimreward-item-container p-2 w-full flex  items-center justify-start gap-4  '>
               <div className='left-container text-xl bg-white  flex  gap-4  p-2 font-bold border-2 border-[#7071E8]'>
                 You have{' '}
@@ -552,8 +605,8 @@ function Dashboard() {
               </button>
             </div> */}
 
-                <div className='top-data-container  h-[50%] flex flex-col gap-2'>
-                  <div className='top-container  h-[50%] bg-black w-full flex justify-around py-4 '>
+                <div className='top-data-container flex flex-col gap-2'>
+                  <div className='top-container bg-black w-full flex justify-around py-4 '>
                     <div className='data-container flex-1  flex flex-col items-center  justify-center '>
                       <div className='title text-[#7071E8]'>Rank</div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
@@ -578,7 +631,7 @@ function Dashboard() {
                       </div>
                     </div>{' '}
                   </div>
-                  <div className='bottom-container  h-[50%]  flex  justify-around'>
+                  <div className='bottom-container flex  justify-around'>
                     <div className='data-container flex flex-col gap-2 items-center  justify-center bg-black min-w-[280px]  max-w-[30%]'>
                       <div className='title mb-2 text-[#7071E8]'>
                         Credibility rewards
@@ -588,7 +641,7 @@ function Dashboard() {
                           <img src={LockedMand}></img>
                           <div className='text-xl'>{allocatedTokens}</div>
                         </div>
-                        <button className='claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8] '>
+                        <button className='claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8]' onClick={handleClaim}>
                           Claim
                         </button>
                       </div>

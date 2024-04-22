@@ -59,7 +59,7 @@ function LeaderBoard() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
-      <div className='leaderboard-container bg-black text-white flex flex-col gap-4 font-mono  w-full px-[5%] h-[90vh]'>
+      <div className='leaderboard-container bg-black text-white flex flex-col gap-4 font-mono  w-full px-[5%]'>
         <div className='top-container flex flex-col'>
           <div className='heading-container font-bold text-[32px]'>
             Leaderboard
