@@ -1,9 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import AirdropImg from '../assets/airdropImage.svg';
 import AirdropImg2 from '../assets/airdropImage2.svg';
+import { useLocation } from 'react-router-dom';
+import { DataContext } from '../context/DataContext';
 import { motion } from 'framer-motion';
 
 function Airdrop() {
+
+  const [twitterAuthCode, setTwitterAuthCode] = useState(null);
+  const [user, setUser] = useState(null);
+  const { search } = useLocation();
+  const { connectWallet, signer, accountAddress } = useContext(DataContext);
+
+  useEffect(() => {
+    console.log("search - ", search);
+    const query = new URLSearchParams(search);
+    const twitterCode = query.get('twitterAuthCode');
+    console.log("twitterAuthCode - ", twitterCode);
+
+    if (twitterCode) {
+      console.log("setting twitter code");
+      setTwitterAuthCode(twitterCode.trim());
+    } else {
+      setTwitterAuthCode(null);
+    }
+  }, [search]);
+
+  useEffect(() => {
+    if (accountAddress && accountAddress.length > 0) {
+      fetch(`${process.env.REACT_APP_API_URL}user/${accountAddress}`)
+        .then(response => response.json())
+        .then(data => setUser(data.output));
+
+      console.log(user);
+    }
+  }, [accountAddress]);
+
+  const twitterAuth = async () => {
+    fetch(`${process.env.REACT_APP_API_URL}twitter-login`)
+      .then(response => response.json())
+      .then(data => window.open(data.url,"_self"));
+  }
+
+  const linkWalletX = async () => {
+    if (!accountAddress) {
+      await connectWallet();
+    }
+
+    if (!accountAddress) return;
+
+    const payload = {
+      "address": await signer.getAddress(),
+      "signature": await signer.signMessage("Trustdrops login"),
+      "code": twitterAuthCode
+    }
+
+    fetch(`${process.env.REACT_APP_API_URL}link-twitter`, {
+      method: 'post',
+      headers: {'Content-Type':'application/json', 'x-api-key':'token'},
+      body: JSON.stringify(payload)
+    }).then((res) => {
+      console.log("linking data reps - ", res);
+    });
+  }
+
   return (
     <motion.main
       initial={{ y: -20, opacity: 0 }}
@@ -28,12 +88,9 @@ function Airdrop() {
                   Connect with twitter/X
                 </div>
               </div>
-              <div className='button-container bg-black px-4 py-2 text-center  w-[200px]'>
-                Connect twitter
-              </div>
-              {/* <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-              ✔️
-            </button> */}
+              <button className='button-container bg-black px-4 py-2 text-center  w-[200px]' disabled={(twitterAuthCode && twitterAuthCode.length>0) || (user && user.approved)} onClick={twitterAuth}>
+                {twitterAuthCode || (user && user.approved) ? "✔️" : "Connect twitter"}
+              </button>
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
@@ -45,12 +102,10 @@ function Airdrop() {
                   Connect your wallet
                 </div>
               </div>
-              <div className='button-container bg-black px-4 text-center py-2  w-[200px]'>
-                Connect wallet
-              </div>
-              {/* <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-              ✔️
-            </button> */}
+              <button className='button-container bg-black px-4 text-center py-2  w-[200px]' disabled={accountAddress && accountAddress.length>0} onClick={connectWallet}>
+                {user && user.approved ? "✔️" :
+                  accountAddress ? `${accountAddress.slice(0, 4)}....${accountAddress.slice(38, 42)}` : "Connect wallet"}
+              </button>
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
@@ -62,12 +117,9 @@ function Airdrop() {
                   Link your wallet with twitter/X
                 </div>
               </div>
-              <div className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-                Link both
-              </div>
-              {/* <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-              ✔️
-            </button> */}
+              <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={user && user.approved} onClick={linkWalletX}>
+                {user && user.approved ? "✔️" : "Link both"}
+              </button>
             </div>
           </div>
         </div>

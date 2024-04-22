@@ -25,6 +25,7 @@ const envsSchema = Joi.object()
     RABBITMQ_URL: Joi.string().required(),
     TRUSTDROPS_CONTRACT_ADDRESS: Joi.string().required(),
     ADMIN_KEY: Joi.string().required(),
+    UI_ENDPOINT: Joi.string().required(),
   })
   .unknown(true);
 
@@ -55,4 +56,5 @@ export default {
   rabbitMqUrl: envVars.RABBITMQ_URL,
   trustdropsContractAddress: envVars.TRUSTDROPS_CONTRACT_ADDRESS,
   adminKey: envVars.ADMIN_KEY,
+  uiEndpoint: envVars.UI_ENDPOINT,
 };

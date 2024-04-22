@@ -39,6 +39,7 @@
     "@types/morgan": "^1.9.3",
     "amqplib": "^0.10.4",
     "apicache": "^1.6.3",
+    "cors": "^2.8.5",
     "dotenv": "^14.3.2",
     "ethers": "^6.11.1",
     "express": "^4.17.1",

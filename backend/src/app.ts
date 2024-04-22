@@ -11,11 +11,19 @@ import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
 import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
+import cors from "cors";
 
 db.connect();
 
 const app: Application = express();
 
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+        methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
+        credentials: true,
+    })
+);
 app.use(lusca.xssProtection(true));
 app.use(expressMongoSanitize());
 app.use(httpContext.middleware);

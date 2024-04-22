@@ -3,17 +3,19 @@ import httpStatus from 'http-status';
 import {
   create,
   read,
+  update,
   authClient,
   twitterClient,
   isSignatureValid,
   queueApproval,
 } from '@components/user/user.service';
 import { IUser } from '@components/user/user.interface';
+import config from '@config/config';
 const STATE = 'trustdrops';
 
 const readUser = async (req: Request, res: Response) => {
   res.status(httpStatus.OK);
-  res.send({ message: 'Read', output: await read(req.params.id) });
+  res.send({ message: 'Read', output: await read(req.params.address) });
 };
 
 const getUserOauthUrl = async (req: Request, res: Response) => {
@@ -21,13 +23,13 @@ const getUserOauthUrl = async (req: Request, res: Response) => {
     state: STATE,
     code_challenge_method: 's256',
   });
-  res.redirect(authUrl);
+  res.send({ url: authUrl });
 };
 
 const twitterCallback = async (req: Request, res: Response) => {
   const { code, state } = req.query;
   if (state !== STATE) return res.status(500).send("State isn't matching");
-  res.send({ code: code });
+  res.redirect(`${config.uiEndpoint}/airdrop?twitterAuthCode=${code}`);
 };
 
 const queueTest = async (req: Request, res: Response) => {
@@ -58,7 +60,12 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       signature,
       twitterId: userData.data.id,
     } as IUser;
-    await create(user);
+    const dbUser = await read(address);
+    if (dbUser) {
+      await update(dbUser, {twitterId: userData.data.id})
+    } else {
+      await create(user);
+    }
 
     queueApproval(user);
 
