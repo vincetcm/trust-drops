@@ -37,6 +37,7 @@ function Dashboard() {
   const [stakesData, setStakesData] = useState([]);
   const [receivedData, setReceivedData] = useState([]);
   const [mandBalance, setMandBalance] = useState(0);
+  const [liveFeedData, setLiveFeedData] = useState([]);
 
   const [stakeForAddress, setStakeForAddress] = useState('');
   const [stakeAmount, setStakeAmount] = useState('');
@@ -70,7 +71,7 @@ function Dashboard() {
   const formatAddress = (address) => {
     const maxLength = 18;
     return address.length > maxLength
-      ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+      ? `${address.substring(0, 4)}...${address.substring(address.length - 4)}`
       : address;
   };
   const truncateAmount = (amount) => {
@@ -128,40 +129,26 @@ function Dashboard() {
     console.log('Unstake function executed');
   };
 
-  const LiveFeedCard = () => {
+  const LiveFeedCard = (props) => {
     return (
       <div
         className='live-feed-container h-[60px]   min-w-[280px] max-w-[30%]
      flex rounded-full   items-center mb-4  bg-white gap-2 px-2 '
       >
-        {/* <div> */}
         <img src={LockedMand} className='icon-container h-10 w-10' />
-        {/* </div> */}
         <div className='data-container  flex flex-col  flex-1'>
-          {/* <div className='fromAddress text-[12px]  text-black'>
-            0xfasakasda...gadf
-          </div>
-          <div className='action bg-black text-[#7071E8] px-2 rounded-sm text-sm'>
-            Staked
-          </div>
-          <div className='toAddress text-[12px] text-black '>
-            0xfaadssaea...dadr
-          </div> */}
           <div className='top-container flex text-black gap-2 items-center justify-between pr-2 '>
             <div className='left-container'>
               <div className='fromAddress text-[16px]  font-semibold text-black'>
-                0x...gadf
+                {formatAddress(props.data.staker)}
               </div>{' '}
-              {/* <div className='action bg-black text-[#7071E8] px-2 rounded-sm text-sm text-center font-bold'>
-                staked
-              </div> */}
             </div>
             <div className='icon-super-container  items-center gap-2'>
               <div className='icon-container flex items-center gap-2'>
                 <img src={MandeLogo} className='icon-container h-6' />
-                <span className='font-bold'>10.00</span>
+                <span className='font-bold'>{parseFloat(ethers.utils.formatUnits(props.data.amount)).toFixed(2)}</span>
               </div>
-              <div className='time text-[14px]  text-slate-500'>2 mins ago</div>
+              <div className='time text-[14px]  text-slate-500'>Fill me{props.data.timestamp}</div>
             </div>
           </div>
         </div>
@@ -196,7 +183,6 @@ function Dashboard() {
     // const ownStakesEvents = await trustdropContract.queryFilter(ownStakesEventFilter);
     // console.log("check ownStakesEvents - ", ownStakesEvents);
     console.log('loading user data');
-    alert('loading')
     try {
       // const provider = new ethers.providers.Web3Provider(window.ethereum);
       const currentBlock = await provider.getBlockNumber();
@@ -253,7 +239,7 @@ function Dashboard() {
     setStakedBalance(truncateAmount(stakedTokens));
 
     const credScore = await trustdropContract.reputation(accountAddress);
-    setCredScore(truncateAmount(credScore));
+    setCredScore(credScore.toString());
 
     try {
       const allocation = await trustdropContract.allocation(
@@ -279,6 +265,28 @@ function Dashboard() {
       loadUserData();
     }
   }, [trustdropContract, accountAddress]);
+
+  useEffect(() => {
+    if (trustdropContract) {
+      let feedData;
+      trustdropContract.on("Staked", (staker, candidate, amount, cred, timestamp) => {
+        feedData = {
+          staker,
+          amount,
+          timestamp: ""
+        };
+        setLiveFeedData([...liveFeedData, feedData]);
+      });
+      trustdropContract.on("Unstaked", (staker, candidate, amount, cred) => {
+        feedData = {
+          staker,
+          amount,
+          timestamp: ""
+        };
+        setLiveFeedData([...liveFeedData, feedData]);
+      });
+    }
+  }, [trustdropContract]);
 
   return (
     <motion.main
@@ -624,11 +632,10 @@ function Dashboard() {
                   Staking activity
                 </div>
                 <div className='livefeed-container overflow-x-scroll h-full flex gap-4 items-center w-full no-scrollbar'>
-                  <LiveFeedCard />
-                  <LiveFeedCard />
-                  <LiveFeedCard />
-                  <LiveFeedCard />
-                  <LiveFeedCard />
+                  {liveFeedData.length > 0 && liveFeedData.map((feedData, idx) => {
+                    {console.log("inside loop liveFeedData - ", feedData)}
+                    return <LiveFeedCard data={feedData} key={idx}/>
+                  })}
                 </div>
               </div>
             </div>
