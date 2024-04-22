@@ -365,7 +365,7 @@ function Dashboard() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
-      <div className='  w-full  font-mono bg-black  text-white'>
+      <div className='  w-full  font-mono bg-black  text-white pb-4'>
         <div className='flex flex-col items-center  '>
           <div className='dashboard-container  w-[90%]  mt-4 '>
             <div className='top-container flex flex-col '>
@@ -553,6 +553,54 @@ function Dashboard() {
                         </td>
                       </tr>
                     ))}
+                    {/* <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '}
+                    <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '}
+                    <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '}
+                    <tr className='border-b w-4   text-md'>
+                      <td className='py-2 flex items-center  gap-2 '>
+                        0xualfkkjafkkafakljadkjf3
+                        <PiCopySimpleBold className='text-[#7071E8]' />
+                      </td>
+                      <td className='py-2 text-center justify-center'>
+                        10 $MAND
+                      </td>
+                      <td className='py-2 flex justify-center items-center gap-2'>
+                        100
+                      </td>
+                    </tr>{' '} */}
                   </tbody>
                 </table>
               </div>
