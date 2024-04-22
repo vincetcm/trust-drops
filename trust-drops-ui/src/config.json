@@ -1,12 +1,27 @@
 {
-    "network": {
-        "chainId": "0x7060",
-        "chainName": "Mande Network",
-        "nativeCurrency": {
-            "name": "Mande",
-            "symbol": "MAND",
-            "decimals": 18
+    "networks": {
+        "devnet": {
+            "chainId": "0x7a69",
+            "chainName": "Mande Network",
+            "nativeCurrency": {
+                "name": "Ether",
+                "symbol": "ETH",
+                "decimals": 18
+            },
+            "rpcUrls": ["http://localhost:8545"]
         },
-        "rpcUrls": ["https://json-rpc.mande.evm.ra.intdev.noisnemyd.xyz"]
+        "testnet": {
+            "chainId": "0x7060",
+            "chainName": "Mande Network",
+            "nativeCurrency": {
+                "name": "Mande",
+                "symbol": "MAND",
+                "decimals": 18
+            },
+            "rpcUrls": ["https://json-rpc.mande.evm.ra.intdev.noisnemyd.xyz"]
+        },
+        "mainnet": {
+
+        }
     }
 }

@@ -31,20 +31,17 @@ function Dashboard() {
   const [isStaking, setIsStaking] = useState(true);
   const [activeTab, setActiveTab] = useState('Your Stakes');
 
-  const [tokenBalance, setTokenBalance] = useState(0);
   const [stakedBalance, setStakedBalance] = useState(0);
   const [credScore, setCredScore] = useState(0);
   const [allocatedTokens, setAllocatedTokens] = useState(0);
   const [stakesData, setStakesData] = useState([]);
   const [receivedData, setReceivedData] = useState([]);
+  const [mandBalance, setMandBalance] = useState(0);
 
   const [stakeForAddress, setStakeForAddress] = useState('');
   const [stakeAmount, setStakeAmount] = useState('');
 
-  const [wakuMessageType, setWakuMessageType] = useState('staked'); // staked, unstaked, winked
-
-  const { accountAddress, contract, sendMessage, feedItems, erc20Contract } =
-    useContext(DataContext);
+  const { accountAddress, trustdropContract, provider } = useContext(DataContext);
 
   console.log('accountAddress', accountAddress);
 
@@ -63,53 +60,6 @@ function Dashboard() {
   //   { address: '0xadfe2...f135d', stake: '16.00 $DAO', credibility: '4.00' },
   // ];
 
-  const LiveFeedItem = ({ type, from, to }) => {
-    const iconSize = 'h-6 w-6';
-
-    const icons = {
-      winked: <FaRegSmileWink className={iconSize + ' text-blue-500'} />,
-      staked: <LockClosedIcon className={iconSize + ' text-green-500'} />,
-      unstaked: <LockOpenIcon className={iconSize + ' text-red-500'} />,
-    };
-
-    return (
-      <div
-        className={`flex items-center  w-full gap-4 p-2 ${
-          type == 'winked'
-            ? 'bg-blue-50'
-            : (type == 'unstaked' ? 'bg-red-50' : '') ||
-              (type == 'staked' ? 'bg-green-50' : '')
-        }`}
-      >
-        <div className=''> {icons[type]}</div>
-
-        <div className='w-full rounded-sm'>
-          <span className='flex-1 items-center gap-2 flex'>
-            {formatAddress(from)}{' '}
-            <PiCopySimpleBold className='text-[#7071E8]' />
-          </span>
-          <span
-            className={`${
-              type == 'winked'
-                ? 'bg-blue-500 text-white text-center px-2 font-light'
-                : (type == 'unstaked'
-                    ? 'bg-red-500 text-white text-center px-2 font-light'
-                    : '') ||
-                  (type == 'staked'
-                    ? 'bg-green-500 text-white text-center px-2 font-light'
-                    : '')
-            }`}
-          >
-            {type}
-          </span>
-          <span className='flex-1 flex items-center gap-2'>
-            {formatAddress(to)} <PiCopySimpleBold className='text-[#7071E8]' />
-          </span>
-        </div>
-      </div>
-    );
-  };
-
   // const receivedData = [
   //   {
   //     address: '0xadfe2...f15d4',
@@ -123,6 +73,10 @@ function Dashboard() {
       ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
       : address;
   };
+  const truncateAmount = (amount) => {
+    const formattedAmount = ethers.utils.formatUnits(amount);
+    return (+formattedAmount).toFixed(4);
+  };
 
   const copyToClipboard = async (wallet) => {
     try {
@@ -134,60 +88,44 @@ function Dashboard() {
 
   const handleStake = async () => {
     try {
-      let estimation = await erc20Contract.estimateGas.approve(
-        contract.address,
-        ethers.utils.parseUnits(stakeAmount)
-      );
-      const approveTx = await erc20Contract.approve(
-        contract.address,
-        ethers.utils.parseUnits(stakeAmount),
-        {
-          gasPrice: estimation,
-        }
-      );
-      await approveTx.wait();
-
-      estimation = await contract.estimateGas.stake(
+      // const estimation = await trustdropContract.estimateGas.stake(
+      //   stakeForAddress,
+      //   {value: ethers.utils.parseUnits(stakeAmount)}
+      // );
+      console.log("check contract - ", trustdropContract);
+      const stakeTx = await trustdropContract.stake(
         stakeForAddress,
-        ethers.utils.parseUnits(stakeAmount)
-      );
-      const stakeTx = await contract.stake(
-        stakeForAddress,
-        ethers.utils.parseUnits(stakeAmount),
         {
-          gasPrice: estimation,
+          value: ethers.utils.parseUnits(stakeAmount),
+          // gasPrice: estimation,
         }
       );
       await stakeTx.wait();
 
       console.log('Stake transaction hash', stakeTx.hash);
       console.log('Stake function executed');
-      sendMessage('staked', stakeForAddress, stakeAmount);
     } catch (e) {
       console.log(e);
     }
   };
 
-  const checkIfWalletIsConnected = async () => {
-    try {
-      const { ethereum } = window;
-      if (!ethereum) {
-        // setIsLoading(false);
-        console.log('Make sure you have metamask!');
-      } else {
-        console.log('We have the ethereum object', ethereum);
-        const accounts = await ethereum.request({ method: 'eth_accounts' });
+  const handleUnstake = async () => {
+    console.log(stakeForAddress, ethers.utils.parseUnits(stakeAmount));
+    // const estimation = await trustdropContract.estimateGas.unstake(
+    //   stakeForAddress,
+    //   ethers.utils.parseUnits(stakeAmount)
+    // );
+    const unstakeTx = await trustdropContract.unstake(
+      stakeForAddress,
+      ethers.utils.parseUnits(stakeAmount),
+      // {
+      //   gasPrice: estimation,
+      // }
+    );
+    await unstakeTx.wait();
 
-        if (accounts.length !== 0) {
-          const account = accounts[0];
-          console.log('Found an authorized account', account);
-          // setCurrentAccount(account);
-        }
-      }
-    } catch (e) {
-      console.log(e);
-    }
-    // setIsLoading(false);
+    console.log('Stake transaction hash', unstakeTx.hash);
+    console.log('Unstake function executed');
   };
 
   const LiveFeedCard = () => {
@@ -230,30 +168,11 @@ function Dashboard() {
       </div>
     );
   };
-  const handleUnstake = async () => {
-    console.log(stakeForAddress, ethers.utils.parseUnits(stakeAmount));
-    const estimation = await contract.estimateGas.unstake(
-      stakeForAddress,
-      ethers.utils.parseUnits(stakeAmount)
-    );
-    const unstakeTx = await contract.unstake(
-      stakeForAddress,
-      ethers.utils.parseUnits(stakeAmount),
-      {
-        gasPrice: estimation,
-      }
-    );
-    await unstakeTx.wait();
-
-    console.log('Stake transaction hash', unstakeTx.hash);
-    console.log('Unstake function executed');
-    sendMessage('unstaked', stakeForAddress, stakeAmount);
-  };
 
   const handleClaim = async () => {
     console.log('Claim function executed');
-    const estimation = await contract.estimateGas.claimTokens();
-    const claimTx = await contract.claimTokens({
+    const estimation = await trustdropContract.estimateGas.claimTokens();
+    const claimTx = await trustdropContract.claimTokens({
       gasPrice: estimation,
     });
 
@@ -273,15 +192,16 @@ function Dashboard() {
   };
 
   async function loadUserData() {
-    // const ownStakesEventFilter = await contract.filters.Staked(accountAddress);
-    // const ownStakesEvents = await contract.queryFilter(ownStakesEventFilter);
+    // const ownStakesEventFilter = await trustdropContract.filters.Staked(accountAddress);
+    // const ownStakesEvents = await trustdropContract.queryFilter(ownStakesEventFilter);
     // console.log("check ownStakesEvents - ", ownStakesEvents);
-
+    console.log('loading user data');
+    alert('loading')
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      // const provider = new ethers.providers.Web3Provider(window.ethereum);
       const currentBlock = await provider.getBlockNumber();
-      const ownStakesEvents = contract.filters.Staked(accountAddress);
-      const ownStakesEventLogs = await contract.queryFilter(
+      const ownStakesEvents = trustdropContract.filters.Staked(accountAddress);
+      const ownStakesEventLogs = await trustdropContract.queryFilter(
         ownStakesEvents,
         currentBlock - 10000,
         currentBlock
@@ -306,8 +226,8 @@ function Dashboard() {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const currentBlock = await provider.getBlockNumber();
-      const ownStakesEvents = contract.filters.Staked(null, accountAddress);
-      const ownStakesEventLogs = await contract.queryFilter(
+      const ownStakesEvents = trustdropContract.filters.Staked(null, accountAddress);
+      const ownStakesEventLogs = await trustdropContract.queryFilter(
         ownStakesEvents,
         currentBlock - 10000,
         currentBlock
@@ -329,35 +249,36 @@ function Dashboard() {
       console.log('check err receivedData -  ', err);
     }
 
-    // const tokenBalance = await erc20Contract?.balanceOf(accountAddress);
-    const tokenBalance = 2000000;
-    setTokenBalance(ethers.utils.formatUnits(tokenBalance));
+    const stakedTokens = await trustdropContract.totalStakedByUser(accountAddress);
+    setStakedBalance(truncateAmount(stakedTokens));
 
-    // const stakedTokens = await contract.totalStakedByUser(accountAddress);
-    // setStakedBalance(ethers.utils.formatUnits(stakedTokens));
-
-    // const credScore = await contract.reputation(accountAddress);
-    // setCredScore(parseInt(credScore));
+    const credScore = await trustdropContract.reputation(accountAddress);
+    setCredScore(truncateAmount(credScore));
 
     try {
-      const allocation = await contract.calculateIndividualAllocation(
+      const allocation = await trustdropContract.allocation(
         accountAddress
       );
-      setAllocatedTokens(ethers.utils.formatUnits(allocation));
+      setAllocatedTokens(truncateAmount(allocation));
     } catch (err) {
       console.log('check err setAllocatedTokens -  ', err);
+    }
+
+    try {
+      let mandBalance = await provider.getBalance(
+        accountAddress
+      );
+      setMandBalance(truncateAmount(mandBalance));
+    } catch (err) {
+      console.log('check err setMandBalance -  ', err);
     }
   }
 
   useEffect(() => {
-    checkIfWalletIsConnected();
-  }, []);
-
-  useEffect(() => {
-    if (contract && accountAddress) {
+    if (trustdropContract && accountAddress) {
       loadUserData();
     }
-  }, [accountAddress]);
+  }, [trustdropContract, accountAddress]);
 
   return (
     <motion.main
@@ -365,7 +286,7 @@ function Dashboard() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
-      <div className='  w-full  font-mono bg-black  text-white'>
+      <div className='  w-full  font-mono bg-black  text-white h-[90vh]'>
         <div className='flex flex-col items-center  '>
           <div className='dashboard-container  w-[90%]  mt-4 '>
             <div className='top-container flex flex-col '>
@@ -535,18 +456,18 @@ function Dashboard() {
                     ).map((data, index) => (
                       <tr key={index} className='border-b w-4  text-md'>
                         <td
-                          className='py-2 flex items-center gap-2 '
+                          className='py-2 flex items-center gap-2 text-[#7071E8]'
                           onClick={() => copyToClipboard(data.address)}
                         >
                           {formatAddress(data.address)}
                           <PiCopySimpleBold className='text-[#7071E8]' />
                         </td>
-                        <td className='py-2 text-center'>
+                        <td className='py-2 text-center text-[#7071E8]'>
                           {activeTab === 'Your Stakes'
                             ? data.stake
                             : data.received}
                         </td>
-                        <td className='py-2 text-center'>
+                        <td className='py-2 text-center text-[#7071E8]'>
                           {activeTab === 'Your Stakes'
                             ? data.credibility
                             : data.credibilityGained}
@@ -590,26 +511,26 @@ function Dashboard() {
                       </div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={AvailableMandeIcon}></img>
-                        <div className='text'>20.05</div>
+                        <div className='text'>{mandBalance}</div>
                       </div>
                     </div>{' '}
                     <div className='data-container flex flex-col items-center  justify-center flex-1 border-l-[1px] border-[#7071E8] '>
                       <div className='title text-[#7071E8]'>Locked $MAND</div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={LockedMand}></img>
-                        <div className='text'>10</div>
+                        <div className='text'>{stakedBalance}</div>
                       </div>
                     </div>{' '}
                   </div>
                   <div className='bottom-container  h-[50%]  flex  justify-around'>
                     <div className='data-container flex flex-col gap-2 items-center  justify-center bg-black min-w-[280px]  max-w-[30%]'>
                       <div className='title mb-2 text-[#7071E8]'>
-                        Crediblity rewards
+                        Credibility rewards
                       </div>
                       <div className='bottom-claim-container flex justify-between items-center w-full px-4 '>
                         <div className='data-value-container text-[24px] flex gap-[4px] '>
                           <img src={LockedMand}></img>
-                          <div className='text-xl'>10.00</div>
+                          <div className='text-xl'>{allocatedTokens}</div>
                         </div>
                         <button className='claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8] '>
                           Claim
@@ -623,7 +544,7 @@ function Dashboard() {
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
                         <img src={LockedMand}></img>
-                        <div className='text-2xl '>10.00</div>
+                        <div className='text-2xl '>{credScore}</div>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
@@ -711,29 +632,10 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-
-            {/* <div className='relative h-screen w-1/5 bg-white '>
-            <div className='sticky top-0 bg-[#7071E8] text-white text-lg font-bold p-4 flex gap-2 items-center justify-center w-full z-10'>
-              <RiLiveLine className='text-xl' /> Live Feed
-            </div>
-            <div className='overflow-y-auto h-full border-2 border-[#7071E8]  feed-items-container'>
-              {feedItems?.map((item, index) => (
-                <div
-                  key={index}
-                  className={`feed-item transition-opacity duration-500 delay-${
-                    index + 1
-                  } ${index === 0 ? 'opacity-100' : ''}`}
-                  // add transition here
-                >
-                  <LiveFeedItem {...item} />
-                </div>
-              ))}
-            </div>
-          </div> */}
           </div>
         </div>
         {openModal && (
-          <LeaderBoardModal closeModal={closeModal} sendMessage={sendMessage} />
+          <LeaderBoardModal closeModal={closeModal} />
         )}
       </div>
     </motion.main>

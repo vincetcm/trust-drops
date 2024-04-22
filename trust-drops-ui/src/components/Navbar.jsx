@@ -15,7 +15,7 @@ function Navbar() {
   const [openModal, setOpenModal] = useState(false);
   const [activeRoute, setActiveRoute] = useState('');
 
-  // const { setAccountAddress, sendMessage } = useContext(DataContext);
+  const { accountAddress, connectWallet } = useContext(DataContext);
 
   const formatAddress = (address) => {
     const maxLength = 14;
@@ -87,7 +87,7 @@ function Navbar() {
           <img src={Mande}></img> MANDE
         </Link>
         {/* {account ? ( */}
-        <div className='navbar-left-container gap-8 flex'>
+        <div className='navbar-left-container gap-8 flex items-center'>
           <Link
             to={'/'}
             className={`${
@@ -128,18 +128,18 @@ function Navbar() {
           >
             Leaderboard
           </Link>
-          {/* <div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl flex items-center'>
-            {formatAddress(account)}
-          </div> */}
-        </div>
-        {/* ) : (
-          <button
-            className='text-white px-4 py-2 border-2 border-white text-xl  bg-[#7071E8]'
+          {accountAddress && accountAddress.length>0 && (<div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl flex items-center '>
+            {formatAddress(accountAddress)}
+          </div>)}
+          {!accountAddress && (
+            <button
+            className='button-container bg-white px-4 text-center py-2  w-[200px] text-black text-[18px]'
             onClick={connectWallet}
-          >
-            Connect wallet
-          </button>
-        )} */}
+            >
+              Connect wallet
+            </button>
+          )}
+        </div>
       </div>
       {openModal && (
         <LeaderBoardModal closeModal={closeModal} />

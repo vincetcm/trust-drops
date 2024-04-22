@@ -7,33 +7,32 @@ const DataContext = createContext();
 
 const DataProvider = ({ children }) => {
   const [signer, setSigner] = useState({});
+  const [provider, setProvider] = useState({});
   const [accountAddress, setAccountAddress] = useState('');
+  const [trustdropContract, setTrustdropContract] = useState(null);
   const [stakedAmount, setStakedAmount] = useState(0);
   const [stakedOnAddress, setStakedOnAddress] = useState('');
-
   const [feedItems, setFeedItems] = useState([]);
-
-  // const contractABI = trustdropABI.abi
-  // const CONTRACT_ADDRESS = "0xDB08bf5bcA3351ea80899CD15ab829963fD2dfc3"
-
-  // const provider = new ethers.providers.Web3Provider(window.ethereum);
-  // const signer = provider.getSigner();
-  // const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
-
-  // const erc20ABI = daoTokenABI.abi
-  // const erc20Address = "0x3229bbbec3dF4B0BDfA6B4ab99D177aA7d7E10A1"
-  // const erc20Contract = new ethers.Contract(erc20Address, erc20ABI, signer);
+  
+  useEffect(() => {
+    if (accountAddress) {
+      console.log("check addre here - ", process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS);
+      console.log("check signer here - ", signer);
+      const contract = new ethers.Contract(process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS, trustdropABI.abi, signer);
+      setTrustdropContract(contract);
+    }
+  }, [accountAddress]);
 
   async function connectWallet() {
     if (window.ethereum) {
       if(window.ethereum._state.isUnlocked) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const { chainId } = await provider.getNetwork();
-        if (chainId != config.network.chainId) {
+        if (chainId != config.networks.devnet.chainId) {
           await window.ethereum.request({
             "method": "wallet_addEthereumChain",
             "params": [
-              config.network
+              config.networks.devnet
             ]
           });
         } else {
@@ -43,6 +42,7 @@ const DataProvider = ({ children }) => {
         await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner();
         setSigner(signer);
+        setProvider(provider);
         setAccountAddress(await signer.getAddress());
       } else {
         console.log(`Please unlock ${window.ethereum.isMetaMask ? "metamask" : "wallet"}`)
@@ -56,6 +56,8 @@ const DataProvider = ({ children }) => {
     connectWallet,
     signer,
     accountAddress,
+    trustdropContract,
+    provider,
     // setAccountAddress,
     // stakedAmount,
     // setStakedAmount,

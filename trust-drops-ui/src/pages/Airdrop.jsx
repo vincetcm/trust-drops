@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 function Airdrop() {
 
   const [twitterAuthCode, setTwitterAuthCode] = useState(null);
+  const [user, setUser] = useState(null);
   const { search } = useLocation();
   const { connectWallet, signer, accountAddress } = useContext(DataContext);
 
@@ -24,6 +25,16 @@ function Airdrop() {
       setTwitterAuthCode(null);
     }
   }, [search]);
+
+  useEffect(() => {
+    if (accountAddress && accountAddress.length > 0) {
+      fetch(`${process.env.REACT_APP_API_URL}user/${accountAddress}`)
+        .then(response => response.json())
+        .then(data => setUser(data.output));
+
+      console.log(user);
+    }
+  }, [accountAddress]);
 
   const twitterAuth = async () => {
     fetch(`${process.env.REACT_APP_API_URL}twitter-login`)
@@ -48,6 +59,8 @@ function Airdrop() {
       method: 'post',
       headers: {'Content-Type':'application/json', 'x-api-key':'token'},
       body: JSON.stringify(payload)
+    }).then((res) => {
+      console.log("linking data reps - ", res);
     });
   }
 
@@ -75,12 +88,9 @@ function Airdrop() {
                   Connect with twitter/X
                 </div>
               </div>
-              <button className='button-container bg-black px-4 py-2 text-center  w-[200px]' disabled={twitterAuthCode && twitterAuthCode.length>0} onClick={twitterAuth}>
-                Connect twitter
+              <button className='button-container bg-black px-4 py-2 text-center  w-[200px]' disabled={(twitterAuthCode && twitterAuthCode.length>0) || (user && user.approved)} onClick={twitterAuth}>
+                {twitterAuthCode || (user && user.approved) ? "✔️" : "Connect twitter"}
               </button>
-              {/* <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-              ✔️
-            </button> */}
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
@@ -88,16 +98,14 @@ function Airdrop() {
                 <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                   2
                 </div>
-                <button className='text-container text-black'>
-                  {accountAddress ? `${accountAddress.slice(0, 4)}....${accountAddress.slice(38, 42)}` : "Connect wallet"}  
-                </button>
+                <div className='text-container text-black'>
+                  Connect your wallet
+                </div>
               </div>
-              <div className='button-container bg-black px-4 text-center py-2  w-[200px]'>
-                Connect wallet
-              </div>
-              {/* <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-              ✔️
-            </button> */}
+              <button className='button-container bg-black px-4 text-center py-2  w-[200px]' disabled={accountAddress && accountAddress.length>0} onClick={connectWallet}>
+                {user && user.approved ? "✔️" :
+                  accountAddress ? `${accountAddress.slice(0, 4)}....${accountAddress.slice(38, 42)}` : "Connect wallet"}
+              </button>
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
@@ -109,12 +117,9 @@ function Airdrop() {
                   Link your wallet with twitter/X
                 </div>
               </div>
-              <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]' onClick={linkWalletX}>
-                Link both
+              <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={user && user.approved} onClick={linkWalletX}>
+                {user && user.approved ? "✔️" : "Link both"}
               </button>
-              {/* <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]'>
-              ✔️
-            </button> */}
             </div>
           </div>
         </div>
