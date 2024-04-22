@@ -27,9 +27,9 @@ const create = async (user: IUser): Promise<boolean> => {
   }
 };
 
-const read = async (id: string): Promise<IUser> => {
-  logger.debug(`Sent user.id ${id}`);
-  const user = await UserModel.findOne({ _id: id });
+const read = async (address: string): Promise<IUser> => {
+  logger.debug(`Sent user.id ${address}`);
+  const user = await UserModel.findOne({ address: address });
   return user as IUser;
 };
 

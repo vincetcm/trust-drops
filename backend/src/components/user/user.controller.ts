@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import {
   create,
   read,
+  update,
   authClient,
   twitterClient,
   isSignatureValid,
@@ -14,7 +15,7 @@ const STATE = 'trustdrops';
 
 const readUser = async (req: Request, res: Response) => {
   res.status(httpStatus.OK);
-  res.send({ message: 'Read', output: await read(req.params.id) });
+  res.send({ message: 'Read', output: await read(req.params.address) });
 };
 
 const getUserOauthUrl = async (req: Request, res: Response) => {
@@ -59,7 +60,12 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       signature,
       twitterId: userData.data.id,
     } as IUser;
-    // await create(user);
+    const dbUser = await read(address);
+    if (dbUser) {
+      await update(dbUser, {twitterId: userData.data.id})
+    } else {
+      await create(user);
+    }
 
     queueApproval(user);
 

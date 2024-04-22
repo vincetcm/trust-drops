@@ -7,5 +7,6 @@ export interface IUser {
 }
 
 export interface IUpdateUser {
-  approved: boolean;
+  twitterId?: string;
+  approved?: boolean;
 }

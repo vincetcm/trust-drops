@@ -14,7 +14,7 @@ import linkUserTwitterValidation from './user.validation';
 const router: Router = Router();
 
 // e.g. createUser request's body is validated and protected by api-key
-router.get('/user/:id', readUser);
+router.get('/user/:address', readUser);
 router.get('/twitter-login/', getUserOauthUrl);
 router.post(
   '/link-twitter/',
