@@ -5,9 +5,9 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ trustdrops",
-    "create-local": "graph create --node http://localhost:8020/ trustdrops",
-    "remove-local": "graph remove --node http://localhost:8020/ trustdrops",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 trustdrops",
+    "create-local": "graph create --node http://localhost:8020/ TrustDrops",
+    "remove-local": "graph remove --node http://localhost:8020/ TrustDrops",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 TrustDrops",
     "test": "graph test"
   },
   "dependencies": {

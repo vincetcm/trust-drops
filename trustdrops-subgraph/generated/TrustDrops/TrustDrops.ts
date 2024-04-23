@@ -60,6 +60,10 @@ export class Staked__Params {
   get cred(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
 }
 
 export class TokensClaimed extends ethereum.Event {
@@ -112,6 +116,10 @@ export class Unstaked__Params {
   get cred(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
 }
 
 export class TrustDrops extends ethereum.SmartContract {
@@ -119,20 +127,20 @@ export class TrustDrops extends ethereum.SmartContract {
     return new TrustDrops("TrustDrops", address);
   }
 
-  DISTRIBUTION_DENOMINATOR(): BigInt {
+  APPROVAL_AIRDROP_AMOUNT(): BigInt {
     let result = super.call(
-      "DISTRIBUTION_DENOMINATOR",
-      "DISTRIBUTION_DENOMINATOR():(uint256)",
+      "APPROVAL_AIRDROP_AMOUNT",
+      "APPROVAL_AIRDROP_AMOUNT():(uint256)",
       [],
     );
 
     return result[0].toBigInt();
   }
 
-  try_DISTRIBUTION_DENOMINATOR(): ethereum.CallResult<BigInt> {
+  try_APPROVAL_AIRDROP_AMOUNT(): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "DISTRIBUTION_DENOMINATOR",
-      "DISTRIBUTION_DENOMINATOR():(uint256)",
+      "APPROVAL_AIRDROP_AMOUNT",
+      "APPROVAL_AIRDROP_AMOUNT():(uint256)",
       [],
     );
     if (result.reverted) {
@@ -142,22 +150,18 @@ export class TrustDrops extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  DISTRIBUTION_INTERVAL(): BigInt {
-    let result = super.call(
-      "DISTRIBUTION_INTERVAL",
-      "DISTRIBUTION_INTERVAL():(uint256)",
-      [],
-    );
+  allocation(param0: Address): BigInt {
+    let result = super.call("allocation", "allocation(address):(uint256)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
 
     return result[0].toBigInt();
   }
 
-  try_DISTRIBUTION_INTERVAL(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "DISTRIBUTION_INTERVAL",
-      "DISTRIBUTION_INTERVAL():(uint256)",
-      [],
-    );
+  try_allocation(param0: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("allocation", "allocation(address):(uint256)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -165,43 +169,20 @@ export class TrustDrops extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  LOGIN_AIRDROP_AMOUNT(): BigInt {
+  approvedAddress(param0: Address): boolean {
     let result = super.call(
-      "LOGIN_AIRDROP_AMOUNT",
-      "LOGIN_AIRDROP_AMOUNT():(uint256)",
-      [],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_LOGIN_AIRDROP_AMOUNT(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "LOGIN_AIRDROP_AMOUNT",
-      "LOGIN_AIRDROP_AMOUNT():(uint256)",
-      [],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  alreadyLoggedIn(param0: Address): boolean {
-    let result = super.call(
-      "alreadyLoggedIn",
-      "alreadyLoggedIn(address):(bool)",
+      "approvedAddress",
+      "approvedAddress(address):(bool)",
       [ethereum.Value.fromAddress(param0)],
     );
 
     return result[0].toBoolean();
   }
 
-  try_alreadyLoggedIn(param0: Address): ethereum.CallResult<boolean> {
+  try_approvedAddress(param0: Address): ethereum.CallResult<boolean> {
     let result = super.tryCall(
-      "alreadyLoggedIn",
-      "alreadyLoggedIn(address):(bool)",
+      "approvedAddress",
+      "approvedAddress(address):(bool)",
       [ethereum.Value.fromAddress(param0)],
     );
     if (result.reverted) {
@@ -211,22 +192,18 @@ export class TrustDrops extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  alreadyVerified(param0: BigInt): boolean {
-    let result = super.call(
-      "alreadyVerified",
-      "alreadyVerified(uint256):(bool)",
-      [ethereum.Value.fromUnsignedBigInt(param0)],
-    );
+  approvedId(param0: Bytes): boolean {
+    let result = super.call("approvedId", "approvedId(bytes32):(bool)", [
+      ethereum.Value.fromFixedBytes(param0),
+    ]);
 
     return result[0].toBoolean();
   }
 
-  try_alreadyVerified(param0: BigInt): ethereum.CallResult<boolean> {
-    let result = super.tryCall(
-      "alreadyVerified",
-      "alreadyVerified(uint256):(bool)",
-      [ethereum.Value.fromUnsignedBigInt(param0)],
-    );
+  try_approvedId(param0: Bytes): ethereum.CallResult<boolean> {
+    let result = super.tryCall("approvedId", "approvedId(bytes32):(bool)", [
+      ethereum.Value.fromFixedBytes(param0),
+    ]);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -234,85 +211,14 @@ export class TrustDrops extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  anonAadhaarVerifierAddr(): Address {
-    let result = super.call(
-      "anonAadhaarVerifierAddr",
-      "anonAadhaarVerifierAddr():(address)",
-      [],
-    );
+  approver(): Address {
+    let result = super.call("approver", "approver():(address)", []);
 
     return result[0].toAddress();
   }
 
-  try_anonAadhaarVerifierAddr(): ethereum.CallResult<Address> {
-    let result = super.tryCall(
-      "anonAadhaarVerifierAddr",
-      "anonAadhaarVerifierAddr():(address)",
-      [],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  calculateIndividualAllocation(candidate: Address): BigInt {
-    let result = super.call(
-      "calculateIndividualAllocation",
-      "calculateIndividualAllocation(address):(uint256)",
-      [ethereum.Value.fromAddress(candidate)],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_calculateIndividualAllocation(
-    candidate: Address,
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "calculateIndividualAllocation",
-      "calculateIndividualAllocation(address):(uint256)",
-      [ethereum.Value.fromAddress(candidate)],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  lastClaimTime(param0: Address): BigInt {
-    let result = super.call(
-      "lastClaimTime",
-      "lastClaimTime(address):(uint256)",
-      [ethereum.Value.fromAddress(param0)],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_lastClaimTime(param0: Address): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "lastClaimTime",
-      "lastClaimTime(address):(uint256)",
-      [ethereum.Value.fromAddress(param0)],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  mandToken(): Address {
-    let result = super.call("mandToken", "mandToken():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_mandToken(): ethereum.CallResult<Address> {
-    let result = super.tryCall("mandToken", "mandToken():(address)", []);
+  try_approver(): ethereum.CallResult<Address> {
+    let result = super.tryCall("approver", "approver():(address)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -354,6 +260,21 @@ export class TrustDrops extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  seedFund(): BigInt {
+    let result = super.call("seedFund", "seedFund():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_seedFund(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("seedFund", "seedFund():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   stakes(param0: Address, param1: Address): BigInt {
     let result = super.call("stakes", "stakes(address,address):(uint256)", [
       ethereum.Value.fromAddress(param0),
@@ -368,6 +289,29 @@ export class TrustDrops extends ethereum.SmartContract {
       ethereum.Value.fromAddress(param0),
       ethereum.Value.fromAddress(param1),
     ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  totalAllocationLocked(): BigInt {
+    let result = super.call(
+      "totalAllocationLocked",
+      "totalAllocationLocked():(uint256)",
+      [],
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_totalAllocationLocked(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "totalAllocationLocked",
+      "totalAllocationLocked():(uint256)",
+      [],
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -420,6 +364,44 @@ export class TrustDrops extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
+
+  userAdded(param0: Address): boolean {
+    let result = super.call("userAdded", "userAdded(address):(bool)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_userAdded(param0: Address): ethereum.CallResult<boolean> {
+    let result = super.tryCall("userAdded", "userAdded(address):(bool)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  users(param0: BigInt): Address {
+    let result = super.call("users", "users(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0),
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_users(param0: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall("users", "users(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0),
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
 }
 
 export class ConstructorCall extends ethereum.Call {
@@ -438,20 +420,46 @@ export class ConstructorCall__Inputs {
   constructor(call: ConstructorCall) {
     this._call = call;
   }
-
-  get _mandTokenAddress(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _anonAadhaarVerifierAddr(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
 }
 
 export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
+    this._call = call;
+  }
+}
+
+export class ApproveCall extends ethereum.Call {
+  get inputs(): ApproveCall__Inputs {
+    return new ApproveCall__Inputs(this);
+  }
+
+  get outputs(): ApproveCall__Outputs {
+    return new ApproveCall__Outputs(this);
+  }
+}
+
+export class ApproveCall__Inputs {
+  _call: ApproveCall;
+
+  constructor(call: ApproveCall) {
+    this._call = call;
+  }
+
+  get _user(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _id(): Bytes {
+    return this._call.inputValues[1].value.toBytes();
+  }
+}
+
+export class ApproveCall__Outputs {
+  _call: ApproveCall;
+
+  constructor(call: ApproveCall) {
     this._call = call;
   }
 }
@@ -478,6 +486,32 @@ export class ClaimTokensCall__Outputs {
   _call: ClaimTokensCall;
 
   constructor(call: ClaimTokensCall) {
+    this._call = call;
+  }
+}
+
+export class DepositSeedFundsCall extends ethereum.Call {
+  get inputs(): DepositSeedFundsCall__Inputs {
+    return new DepositSeedFundsCall__Inputs(this);
+  }
+
+  get outputs(): DepositSeedFundsCall__Outputs {
+    return new DepositSeedFundsCall__Outputs(this);
+  }
+}
+
+export class DepositSeedFundsCall__Inputs {
+  _call: DepositSeedFundsCall;
+
+  constructor(call: DepositSeedFundsCall) {
+    this._call = call;
+  }
+}
+
+export class DepositSeedFundsCall__Outputs {
+  _call: DepositSeedFundsCall;
+
+  constructor(call: DepositSeedFundsCall) {
     this._call = call;
   }
 }
@@ -527,10 +561,6 @@ export class StakeCall__Inputs {
 
   get candidate(): Address {
     return this._call.inputValues[0].value.toAddress();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
   }
 }
 
@@ -606,44 +636,32 @@ export class UnstakeCall__Outputs {
   }
 }
 
-export class VerifyAadhaarCall extends ethereum.Call {
-  get inputs(): VerifyAadhaarCall__Inputs {
-    return new VerifyAadhaarCall__Inputs(this);
+export class UpdateApproverCall extends ethereum.Call {
+  get inputs(): UpdateApproverCall__Inputs {
+    return new UpdateApproverCall__Inputs(this);
   }
 
-  get outputs(): VerifyAadhaarCall__Outputs {
-    return new VerifyAadhaarCall__Outputs(this);
+  get outputs(): UpdateApproverCall__Outputs {
+    return new UpdateApproverCall__Outputs(this);
   }
 }
 
-export class VerifyAadhaarCall__Inputs {
-  _call: VerifyAadhaarCall;
+export class UpdateApproverCall__Inputs {
+  _call: UpdateApproverCall;
 
-  constructor(call: VerifyAadhaarCall) {
+  constructor(call: UpdateApproverCall) {
     this._call = call;
   }
 
-  get _pA(): Array<BigInt> {
-    return this._call.inputValues[0].value.toBigIntArray();
-  }
-
-  get _pB(): Array<Array<BigInt>> {
-    return this._call.inputValues[1].value.toBigIntMatrix();
-  }
-
-  get _pC(): Array<BigInt> {
-    return this._call.inputValues[2].value.toBigIntArray();
-  }
-
-  get _pubSignals(): Array<BigInt> {
-    return this._call.inputValues[3].value.toBigIntArray();
+  get _newApprover(): Address {
+    return this._call.inputValues[0].value.toAddress();
   }
 }
 
-export class VerifyAadhaarCall__Outputs {
-  _call: VerifyAadhaarCall;
+export class UpdateApproverCall__Outputs {
+  _call: UpdateApproverCall;
 
-  constructor(call: VerifyAadhaarCall) {
+  constructor(call: UpdateApproverCall) {
     this._call = call;
   }
 }

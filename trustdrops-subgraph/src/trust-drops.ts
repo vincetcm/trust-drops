@@ -1,4 +1,4 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt, log } from "@graphprotocol/graph-ts"
 import {
   TrustDrops,
   OwnershipTransferred,
@@ -9,6 +9,7 @@ import {
 import { Stake, User } from "../generated/schema"
 
 export function handleStaked(event: Staked): void {
+  log.info('Entered handler!', [])
   let candidate = User.load(event.params.candidate)
   if (candidate == null) {
     candidate = new User(event.params.candidate)
@@ -18,15 +19,23 @@ export function handleStaked(event: Staked): void {
     candidate.tokenBalance = BigInt.fromI32(0)
     candidate.credScoreAccrued = BigInt.fromI32(0)
     candidate.credScoreDistributed = BigInt.fromI32(0)
-
+    log.info('created candidate!', [])
     candidate.save()
   } 
 
   // check if staker is already a user, throw error if not
   let staker = User.load(event.params.staker)
   if (staker == null) {
-    // throw error
-    throw new Error('Staker is not a user')
+    staker = new User(event.params.staker)
+    staker.id = event.params.staker
+    staker.address = event.params.staker
+    staker.tokenStaked = BigInt.fromI32(0)
+    staker.tokenBalance = BigInt.fromI32(0)
+    staker.credScoreAccrued = BigInt.fromI32(0)
+    staker.credScoreDistributed = BigInt.fromI32(0)
+
+    staker.save()
+    log.info('created staker!', [])
   } 
 
   // update staker's cred score distributed
@@ -49,6 +58,8 @@ export function handleStaked(event: Staked): void {
     stake.candidate = candidate.id
     stake.amount = BigInt.fromI32(0)
     stake.credScore = BigInt.fromI32(0)
+
+    log.info('created stake!', [])
   }
   stake.stakeType = 'STAKE'
   stake.amount = stake.amount.plus(event.params.amount)
