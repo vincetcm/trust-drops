@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdOutlineLeaderboard, MdOutlineVerifiedUser } from 'react-icons/md';
 import {
   FaRegUserCircle,
@@ -11,12 +11,15 @@ import { PiCopySimpleBold } from 'react-icons/pi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { motion } from 'framer-motion';
+import { ethers } from 'ethers';
+import { createClient, cacheExchange, fetchExchange } from 'urql';
 
 function LeaderBoard() {
   // Check the value of sendMessage
   // const [isModalOpen, setModalOpen] = useState(openModal);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [boardItems, setBoardItems] = useState([]);
 
   // Example dummy data
   const dummyData = Array.from({ length: 50 }, (_, index) => ({
@@ -31,6 +34,41 @@ function LeaderBoard() {
   const lastItemIndex = currentPage * itemsPerPage;
   const firstItemIndex = lastItemIndex - itemsPerPage;
   const currentItems = dummyData.slice(firstItemIndex, lastItemIndex);
+
+  useEffect(() => {
+    (async () => {
+      const usersQuery = `
+        query {
+          users(orderBy: credScoreAccrued, orderDirection: desc, first: ${itemsPerPage}, skip: ${(currentPage-1)*itemsPerPage}) {
+            id
+            address
+            tokenStaked
+            credScoreAccrued
+            credScoreDistributed
+          }
+        }
+      `
+  
+      const client = createClient({
+        url: process.env.REACT_APP_SUBGRAPH_API,
+        exchanges: [cacheExchange, fetchExchange],
+      })
+  
+      const data = await client.query(usersQuery).toPromise();
+      console.log("subgraph data - ", data.data.users)
+      const leaderBoardData = data.data.users.map((el, idx) => {
+        return {
+          rank: idx + 1 + ((currentPage-1)*itemsPerPage),
+          wallet: el.address,
+          credibilityScore: el.credScoreAccrued,
+          lockedMand: el.tokenStaked,
+          credibilityGiven: el.credScoreDistributed
+        }
+      })
+      console.log("leaderBoardData", leaderBoardData)
+      setBoardItems(leaderBoardData);
+    })();
+  }, [currentPage]);
 
   const totalPages = Math.ceil(dummyData.length / itemsPerPage);
 
@@ -55,9 +93,9 @@ function LeaderBoard() {
 
   return (
     <motion.main
-      initial={{ y: -20, opacity: 0 }}
+      initial={{ y: -5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
+      transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
       <div className='leaderboard-container bg-black text-white flex flex-col gap-4 font-mono  w-full px-[5%]'>
         <div className='top-container flex flex-col'>
@@ -89,10 +127,6 @@ function LeaderBoard() {
                           <MdOutlineVerifiedUser className='h-4 w-4 mr-2 inline-block ml-2' />
                           Credibility score
                         </th>
-                        <th className='text-left py-3 px-4 uppercase font-semibold text-sm '>
-                          <FaRegDotCircle className='h-4 w-4 mr-2 inline-block ml-2' />
-                          Available $MAND
-                        </th>
                         <th className='text-left py-3 px-4 uppercase font-semibold text-sm'>
                           <IoLockClosedOutline className='h-4 mr-2 w-4 inline-block ml-2' />
                           Locked $MAND
@@ -104,7 +138,7 @@ function LeaderBoard() {
                       </tr>
                     </thead>
                     <tbody className='text-white text-[16px] bg-black'>
-                      {currentItems.map((item, index) => (
+                      {boardItems && boardItems.map((item, index) => (
                         <tr key={index}>
                           <td className='text-center py-3 px-4'>{item.rank}</td>
                           <td className='text-left py-3  px-4 flex items-center'>
@@ -127,10 +161,7 @@ function LeaderBoard() {
                             {item.credibilityScore}
                           </td>
                           <td className='text-center py-3 px-4'>
-                            {item.availableSMND}
-                          </td>
-                          <td className='text-center py-3 px-4'>
-                            {item.lockedSMND}
+                            {parseFloat(ethers.utils.formatUnits(item.lockedMand)).toFixed(2)}
                           </td>
                           <td className='text-center py-3 px-4'>
                             {item.credibilityGiven}

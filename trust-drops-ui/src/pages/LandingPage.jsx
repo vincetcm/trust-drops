@@ -77,9 +77,9 @@ function LandingPage() {
 
   return (
     <motion.main
-      initial={{ y: -20, opacity: 0 }}
+      initial={{ y: -5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
+      transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
       <div className=' flex  justify-center   h-[90vh] bg-black   text-white font-mono'>
         <div className='left-container w-[60%] pl-[5%] flex flex-col justify-between  '>

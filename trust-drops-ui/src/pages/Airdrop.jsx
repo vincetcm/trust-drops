@@ -28,11 +28,16 @@ function Airdrop() {
 
   useEffect(() => {
     if (accountAddress && accountAddress.length > 0) {
-      fetch(`${process.env.REACT_APP_API_URL}user/${accountAddress}`)
-        .then(response => response.json())
-        .then(data => setUser(data.output));
+      try {
+        fetch(`${process.env.REACT_APP_API_URL}user/${accountAddress}`)
+          .then(response => response.json())
+          .then(data => setUser(data.output))
+          .catch(err => console.log(err));
 
-      console.log(user);
+        console.log(user);
+      } catch (err) {
+        console.log("could not fetch user details")
+      }
     }
   }, [accountAddress]);
 
@@ -66,9 +71,9 @@ function Airdrop() {
 
   return (
     <motion.main
-      initial={{ y: -20, opacity: 0 }}
+      initial={{ y: -5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
+      transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
       <div className=' flex  justify-center  h-[90vh]  bg-black   text-white font-mono'>
         <div className='left-contianer w-[60%]  pl-[5%] flex flex-col gap-6  mt-10'>

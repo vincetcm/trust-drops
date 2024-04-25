@@ -8,7 +8,7 @@ async function main() {
     `Trust drops deployed to ${trustDrops.target}`
   );
 
-  let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('300')});
+  let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('3000')});
   await seedFundTx.wait();
   console.log(
     `Seed fund transferred`

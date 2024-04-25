@@ -10,6 +10,7 @@ import { FaRegSmileWink } from 'react-icons/fa';
 import { RiLiveLine } from 'react-icons/ri';
 import { ethers } from 'ethers';
 import trustdropABI from '../abis/trustdropABI.json';
+import { createClient, cacheExchange, fetchExchange } from 'urql';
 
 import {
   LockClosedIcon,
@@ -38,6 +39,7 @@ function Dashboard() {
   const [receivedData, setReceivedData] = useState([]);
   const [mandBalance, setMandBalance] = useState(0);
   const [liveFeedData, setLiveFeedData] = useState([]);
+  const [userRank, setUserRank] = useState(0);
 
   const [stakeForAddress, setStakeForAddress] = useState('');
   const [stakeAmount, setStakeAmount] = useState('');
@@ -159,11 +161,17 @@ function Dashboard() {
   const handleClaim = async () => {
     console.log('Claim function executed');
     // const estimation = await trustdropContract.estimateGas.claimTokens();
-    const claimTx = await trustdropContract.claimTokens();
+    try {
+      const claimTx = await trustdropContract.claimTokens();
 
-    await claimTx.wait();
+      await claimTx.wait();
+      console.log('Claim transaction hash', claimTx.hash);
 
-    console.log('Claim transaction hash', claimTx.hash);
+      setAllocatedTokens(0.0000);
+    } catch (err) {
+      console.log('claim failed');
+    }
+
   };
 
   const handleTabSwitch = (tabName) => {
@@ -286,6 +294,27 @@ function Dashboard() {
     } catch (err) {
       console.log('check err setMandBalance -  ', err);
     }
+
+    try {
+      const usersQuery = `
+          query {
+            users(where: {credScoreAccrued_gt: ${credScore.toString()}}) {
+              id
+            }
+          }
+        `
+    
+      const client = createClient({
+        url: process.env.REACT_APP_SUBGRAPH_API,
+        exchanges: [cacheExchange, fetchExchange],
+      })
+  
+      const data = await client.query(usersQuery).toPromise();
+      console.log("check eank - ", data)
+      setUserRank(data.data.users.length+1);
+    } catch (err) {
+      console.log("fetching rank failed");
+    }
   }
 
   useEffect(() => {
@@ -343,9 +372,9 @@ function Dashboard() {
 
   return (
     <motion.main
-      initial={{ y: -20, opacity: 0 }}
+      initial={{ y: -5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
+      transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
       <div className='  w-full  font-mono bg-black  text-white pb-5'>
         <div className='flex flex-col items-center  '>
@@ -464,7 +493,7 @@ function Dashboard() {
                   className={`text-center  flex-1 bg-[#7071E8]  p-2 rounded ${
                     activeTab === 'Your Stakes'
                       ? 'text-white'
-                      : 'bg-white border-2 text-[#7071E8] border-[#7071E8] '
+                      : 'bg-white border-2 text-[#7071E8] border-[#7071E8]'
                   }`}
                 >
                   Your Stakes
@@ -511,7 +540,7 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(activeTab === 'Your Stakes'
+                  {(activeTab === 'Your Stakes'
                       ? stakesData
                       : receivedData
                     ).map((data, index) => (
@@ -535,6 +564,10 @@ function Dashboard() {
                         </td>
                       </tr>
                     ))}
+                    {(activeTab === 'Your Stakes'
+                      ? stakesData.length
+                      : receivedData.length
+                    ) === 0 && <tr className='flex justify-center items-center pt-2'><td className='flex justify-center items-center'>No Data</td></tr>}
                     {/* <tr className='border-b w-4   text-md'>
                       <td className='py-2 flex items-center  gap-2 '>
                         0xualfkkjafkkafakljadkjf3
@@ -611,7 +644,7 @@ function Dashboard() {
                       <div className='title text-[#7071E8]'>Rank</div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={RankIcon}></img>
-                        <div className='text'>102</div>
+                        <div className='text'>{userRank}</div>
                       </div>
                     </div>{' '}
                     <div className='data-container flex flex-col flex-1 items-center  justify-center border-l-[1px] border-[#7071E8]'>
