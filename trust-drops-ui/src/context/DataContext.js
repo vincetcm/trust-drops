@@ -28,11 +28,11 @@ const DataProvider = ({ children }) => {
       if(window.ethereum._state.isUnlocked) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const { chainId } = await provider.getNetwork();
-        if (chainId != config.networks.devnet.chainId) {
+        if (chainId != config.networks.testnet.chainId) {
           await window.ethereum.request({
             "method": "wallet_addEthereumChain",
             "params": [
-              config.networks.devnet
+              config.networks.testnet
             ]
           });
         } else {
