@@ -16,6 +16,12 @@ type Stake @entity {
   credScore: BigInt!
 }
 
+type Aggregated @entity {
+  id: String!
+  stakesCount: BigInt!
+  usersCount: BigInt!
+}
+
 enum StakeType {
   STAKE
   UNSTAKE

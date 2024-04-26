@@ -139,8 +139,14 @@
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "APPROVAL_AIRDROP_AMOUNT",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "allocation",
     "outputs": [
       {
         "internalType": "uint256",
@@ -152,14 +158,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "allocation",
+    "inputs": [],
+    "name": "approvalAirdropAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -414,6 +414,19 @@
       }
     ],
     "name": "unstake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_updatedAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateAirdropAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

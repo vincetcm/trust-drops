@@ -42,12 +42,19 @@ async function main() {
   
   // await stake(signer[1], "0x5E0689720093Db5D739Ec1CC266f321026AcD5D5", ethers.parseEther("9.0"));
   
+  // const tx = {
+  //     to: trustDropAddress,
+  //     value: ethers.parseEther('300')
+  // };
+  // const sendEthTx = await signer[0].sendTransaction(tx);
+  // await sendEthTx.wait();
+
   const tx = {
-      to: trustDropAddress,
-      value: ethers.parseEther('300')
-  };
-  const sendEthTx = await signer[0].sendTransaction(tx);
-  await sendEthTx.wait();
+    to: "0xCE960B379294DeCeDe2e5Dfa5Dc6Dc099ca64dAC",
+    value: ethers.parseEther('300')
+};
+const sendEthTx = await signer[0].sendTransaction(tx);
+await sendEthTx.wait();
 
   // let allocation = await trustDrops.allocation("0x5E0689720093Db5D739Ec1CC266f321026AcD5D5");
   // console.log("check allocation - ", allocation);

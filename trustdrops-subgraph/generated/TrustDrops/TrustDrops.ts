@@ -127,29 +127,6 @@ export class TrustDrops extends ethereum.SmartContract {
     return new TrustDrops("TrustDrops", address);
   }
 
-  APPROVAL_AIRDROP_AMOUNT(): BigInt {
-    let result = super.call(
-      "APPROVAL_AIRDROP_AMOUNT",
-      "APPROVAL_AIRDROP_AMOUNT():(uint256)",
-      [],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_APPROVAL_AIRDROP_AMOUNT(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "APPROVAL_AIRDROP_AMOUNT",
-      "APPROVAL_AIRDROP_AMOUNT():(uint256)",
-      [],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   allocation(param0: Address): BigInt {
     let result = super.call("allocation", "allocation(address):(uint256)", [
       ethereum.Value.fromAddress(param0),
@@ -162,6 +139,29 @@ export class TrustDrops extends ethereum.SmartContract {
     let result = super.tryCall("allocation", "allocation(address):(uint256)", [
       ethereum.Value.fromAddress(param0),
     ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  approvalAirdropAmount(): BigInt {
+    let result = super.call(
+      "approvalAirdropAmount",
+      "approvalAirdropAmount():(uint256)",
+      [],
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_approvalAirdropAmount(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "approvalAirdropAmount",
+      "approvalAirdropAmount():(uint256)",
+      [],
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -632,6 +632,36 @@ export class UnstakeCall__Outputs {
   _call: UnstakeCall;
 
   constructor(call: UnstakeCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateAirdropAmountCall extends ethereum.Call {
+  get inputs(): UpdateAirdropAmountCall__Inputs {
+    return new UpdateAirdropAmountCall__Inputs(this);
+  }
+
+  get outputs(): UpdateAirdropAmountCall__Outputs {
+    return new UpdateAirdropAmountCall__Outputs(this);
+  }
+}
+
+export class UpdateAirdropAmountCall__Inputs {
+  _call: UpdateAirdropAmountCall;
+
+  constructor(call: UpdateAirdropAmountCall) {
+    this._call = call;
+  }
+
+  get _updatedAmount(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class UpdateAirdropAmountCall__Outputs {
+  _call: UpdateAirdropAmountCall;
+
+  constructor(call: UpdateAirdropAmountCall) {
     this._call = call;
   }
 }

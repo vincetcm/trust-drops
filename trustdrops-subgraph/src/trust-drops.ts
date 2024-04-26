@@ -6,11 +6,17 @@ import {
   TokensClaimed,
   Unstaked
 } from "../generated/TrustDrops/TrustDrops"
-import { Stake, User } from "../generated/schema"
+import { Stake, User, Aggregated } from "../generated/schema"
 
 export function handleStaked(event: Staked): void {
   log.info('Entered handler!', [])
   let candidate = User.load(event.params.candidate)
+  let aggregate = Aggregated.load("TRUSTDROPS")
+  if (aggregate == null) {
+    aggregate = new Aggregated("TRUSTDROPS");
+    aggregate.usersCount = BigInt.fromI32(0);
+    aggregate.stakesCount = BigInt.fromI32(0);
+  }
   if (candidate == null) {
     candidate = new User(event.params.candidate)
     candidate.id = event.params.candidate
@@ -20,6 +26,8 @@ export function handleStaked(event: Staked): void {
     candidate.credScoreAccrued = BigInt.fromI32(0)
     candidate.credScoreDistributed = BigInt.fromI32(0)
     log.info('created candidate!', [])
+    aggregate.usersCount = aggregate.usersCount.plus(BigInt.fromI32(1));
+    aggregate.save();
     candidate.save()
   } 
 
@@ -33,7 +41,8 @@ export function handleStaked(event: Staked): void {
     staker.tokenBalance = BigInt.fromI32(0)
     staker.credScoreAccrued = BigInt.fromI32(0)
     staker.credScoreDistributed = BigInt.fromI32(0)
-
+    aggregate.usersCount = aggregate.usersCount.plus(BigInt.fromI32(1));
+    aggregate.save();
     staker.save()
     log.info('created staker!', [])
   } 
@@ -58,7 +67,8 @@ export function handleStaked(event: Staked): void {
     stake.candidate = candidate.id
     stake.amount = BigInt.fromI32(0)
     stake.credScore = BigInt.fromI32(0)
-
+    aggregate.stakesCount = aggregate.stakesCount.plus(BigInt.fromI32(1));
+    aggregate.save();
     log.info('created stake!', [])
   }
   stake.stakeType = 'STAKE'

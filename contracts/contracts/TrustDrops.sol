@@ -7,7 +7,7 @@ contract TrustDrops is Ownable {
     uint public totalReputation;
     uint public seedFund;
     uint public totalAllocationLocked;
-    uint public constant APPROVAL_AIRDROP_AMOUNT = 30 * 1e18;
+    uint public approvalAirdropAmount = 30 * 1e18;
     address public approver;
 
     struct Stake {
@@ -49,22 +49,23 @@ contract TrustDrops is Ownable {
         seedFund += msg.value;
     }
 
+    function updateAirdropAmount(uint _updatedAmount) onlyOwner() external {
+        approvalAirdropAmount = _updatedAmount;
+    }
+
     function approve(address _user, bytes32 _id) external {
         require(msg.sender == approver, "TrustDrops::Not authorised");
         require(approvedAddress[_user] == false, "TrustDrops::Address already approved");
         require(approvedId[_id] == false, "TrustDrops::Id already approved");
         approvedAddress[_user] = true;
         approvedId[_id] = true;
-
-        users.push(msg.sender);
-        userAdded[msg.sender] = true;
-        (bool sent, ) = (msg.sender).call{value: APPROVAL_AIRDROP_AMOUNT}("");
-        seedFund -= APPROVAL_AIRDROP_AMOUNT;
+        (bool sent, ) = (_user).call{value: approvalAirdropAmount}("");
+        seedFund -= approvalAirdropAmount;
         require(sent, "TrustDrops::Failed to send Ether");
     }
 
     function stake(address candidate) payable external {
-        require(approvedAddress[msg.sender], "TrustDrops::Not authorised");
+        require(approvedAddress[msg.sender], "Link your wallet with twitter to stake");
         uint amount = msg.value;
         require(amount > 0, "TrustDrops::Amount must be positive");
 
@@ -101,7 +102,7 @@ contract TrustDrops is Ownable {
 
 
     function claimTokens() external {
-        require(allocation[msg.sender] > 0, "TrustDrops::No reward allocation");
+        require(allocation[msg.sender] > 0, "No reward allocation");
         uint reward = allocation[msg.sender];
         allocation[msg.sender] = 0;
         (bool sent, ) = (msg.sender).call{value: reward}("");

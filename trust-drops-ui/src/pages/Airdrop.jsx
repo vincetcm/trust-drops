@@ -4,11 +4,15 @@ import AirdropImg2 from '../assets/airdropImage2.svg';
 import { useLocation } from 'react-router-dom';
 import { DataContext } from '../context/DataContext';
 import { motion } from 'framer-motion';
+import ClipLoader from "react-spinners/ClipLoader";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Airdrop() {
 
   const [twitterAuthCode, setTwitterAuthCode] = useState(null);
   const [user, setUser] = useState(null);
+  const [linkLoading, setLinkLoading] = useState(false);
   const { search } = useLocation();
   const { connectWallet, signer, accountAddress } = useContext(DataContext);
 
@@ -48,6 +52,7 @@ function Airdrop() {
   }
 
   const linkWalletX = async () => {
+    setLinkLoading(true);
     if (!accountAddress) {
       await connectWallet();
     }
@@ -66,6 +71,11 @@ function Airdrop() {
       body: JSON.stringify(payload)
     }).then((res) => {
       console.log("linking data reps - ", res);
+      setUser({approved: true});
+      setLinkLoading(false);
+      toast("You received 30 MAND", {icon: "🚀"});
+    }).catch((err) => {
+      setLinkLoading(false);
     });
   }
 
@@ -93,7 +103,7 @@ function Airdrop() {
                   Connect with twitter/X
                 </div>
               </div>
-              <button className='button-container bg-black px-4 py-2 text-center  w-[200px]' disabled={(twitterAuthCode && twitterAuthCode.length>0) || (user && user.approved)} onClick={twitterAuth}>
+              <button className='flex justify-center items-center button-container bg-black px-4 py-2 text-center  w-[200px]' disabled={(twitterAuthCode && twitterAuthCode.length>0) || (user && user.approved)} onClick={twitterAuth}>
                 {twitterAuthCode || (user && user.approved) ? "✔️" : "Connect twitter"}
               </button>
             </div>
@@ -122,16 +132,25 @@ function Airdrop() {
                   Link your wallet with twitter/X
                 </div>
               </div>
-              <button className='button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={user && user.approved} onClick={linkWalletX}>
-                {user && user.approved ? "✔️" : "Link both"}
+              <button className='flex justify-center items-center button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={linkLoading || (user && user.approved)} onClick={linkWalletX}>
+                {!linkLoading && (user && user.approved ? "✔️" : "Link both")}
+                {linkLoading && <ClipLoader color={"white"} size={25} />}
               </button>
             </div>
           </div>
+          <i>*This is a testnet application. Please note that the AIRDROP tokens received are test tokens only. A similar app will be used to receive mainnet tokens on our mainnet launch</i>
         </div>
         <div className='right-container  w-[40%]  h-full '>
           <img src={AirdropImg} className='object-cover h-full'></img>
         </div>
       </div>
+      <ToastContainer 
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={true}
+        rtl={false}
+        theme="light"
+      />
     </motion.main>
   );
 }

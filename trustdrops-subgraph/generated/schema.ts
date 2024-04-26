@@ -65,6 +65,19 @@ export class User extends Entity {
     this.set("address", Value.fromBytes(value));
   }
 
+  get rank(): BigInt {
+    let value = this.get("rank");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set rank(value: BigInt) {
+    this.set("rank", Value.fromBigInt(value));
+  }
+
   get credScoreAccrued(): BigInt {
     let value = this.get("credScoreAccrued");
     if (!value || value.kind == ValueKind.NULL) {
@@ -220,5 +233,71 @@ export class Stake extends Entity {
 
   set credScore(value: BigInt) {
     this.set("credScore", Value.fromBigInt(value));
+  }
+}
+
+export class Aggregated extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Aggregated entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Aggregated must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+      );
+      store.set("Aggregated", id.toString(), this);
+    }
+  }
+
+  static loadInBlock(id: string): Aggregated | null {
+    return changetype<Aggregated | null>(store.get_in_block("Aggregated", id));
+  }
+
+  static load(id: string): Aggregated | null {
+    return changetype<Aggregated | null>(store.get("Aggregated", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get stakesCount(): BigInt {
+    let value = this.get("stakesCount");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set stakesCount(value: BigInt) {
+    this.set("stakesCount", Value.fromBigInt(value));
+  }
+
+  get usersCount(): BigInt {
+    let value = this.get("usersCount");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set usersCount(value: BigInt) {
+    this.set("usersCount", Value.fromBigInt(value));
   }
 }

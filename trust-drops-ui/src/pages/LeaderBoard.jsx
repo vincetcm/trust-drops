@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { MdOutlineLeaderboard, MdOutlineVerifiedUser } from 'react-icons/md';
 import {
   FaRegUserCircle,
@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { motion } from 'framer-motion';
 import { ethers } from 'ethers';
 import { createClient, cacheExchange, fetchExchange } from 'urql';
+import { DataContext } from '../context/DataContext';
 
 function LeaderBoard() {
   // Check the value of sendMessage
@@ -20,20 +21,75 @@ function LeaderBoard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [boardItems, setBoardItems] = useState([]);
+  const [userBoardItem, setUserBoardItem] = useState();
+  const [totalPages, setTotalPages] = useState(1);
+  const { accountAddress, trustdropContract } = useContext(DataContext);
 
-  // Example dummy data
-  const dummyData = Array.from({ length: 50 }, (_, index) => ({
-    rank: `#${index + 1}`,
-    wallet: `0xdummyWalletAddress_${index}`,
-    credibilityScore: Math.round(Math.random() * 1000),
-    availableSMND: Math.round(Math.random() * 100),
-    lockedSMND: Math.round(Math.random() * 100),
-    credibilityGiven: Math.round(Math.random() * 100),
-  }));
+  useEffect(() => {
+    (async () => {
+      const countQuery = `
+        query {
+          aggregated(id:"TRUSTDROPS") {
+            usersCount
+          }
+        }
+      `
+  
+      const client = createClient({
+        url: process.env.REACT_APP_SUBGRAPH_API,
+        exchanges: [cacheExchange, fetchExchange],
+      })
+  
+      const data = await client.query(countQuery).toPromise();
+      console.log("subgraph count data - ", data.data.aggregated.usersCount)
+      setTotalPages((parseInt(data.data.aggregated.usersCount / itemsPerPage)) + 1);
+    })();
+  }, []);
 
-  const lastItemIndex = currentPage * itemsPerPage;
-  const firstItemIndex = lastItemIndex - itemsPerPage;
-  const currentItems = dummyData.slice(firstItemIndex, lastItemIndex);
+  useEffect(() => {
+    if (!accountAddress || !trustdropContract) return;
+
+    
+    (async () => {
+      const credScore = await trustdropContract.reputation(accountAddress);
+      const userRankQuery = `
+          query {
+            users(where: {credScoreAccrued_gt: ${credScore.toString()}}) {
+              id
+            }
+          }
+        `
+    
+      const client = createClient({
+        url: process.env.REACT_APP_SUBGRAPH_API,
+        exchanges: [cacheExchange, fetchExchange],
+      })
+  
+      const rankData = await client.query(userRankQuery).toPromise();
+      const userRank = rankData.data.users.length+1;
+      const userQuery = `
+        query {
+          user(id: "${accountAddress}") {
+            id
+            address
+            tokenStaked
+            credScoreAccrued
+            credScoreDistributed
+          }
+        }
+      `
+      const userData = await client.query(userQuery).toPromise();
+      const userBoardData = {
+        rank: userRank,
+        wallet: userData.data.user.address,
+        credibilityScore: userData.data.user.credScoreAccrued,
+        lockedMand: userData.data.user.tokenStaked,
+        credibilityGiven: userData.data.user.credScoreDistributed
+      }
+      console.log("userData - ", userBoardData);
+      setUserBoardItem(userBoardData);
+    })();
+  }, [accountAddress]);
 
   useEffect(() => {
     (async () => {
@@ -55,7 +111,6 @@ function LeaderBoard() {
       })
   
       const data = await client.query(usersQuery).toPromise();
-      console.log("subgraph data - ", data.data.users)
       const leaderBoardData = data.data.users.map((el, idx) => {
         return {
           rank: idx + 1 + ((currentPage-1)*itemsPerPage),
@@ -65,26 +120,18 @@ function LeaderBoard() {
           credibilityGiven: el.credScoreDistributed
         }
       })
-      console.log("leaderBoardData", leaderBoardData)
       setBoardItems(leaderBoardData);
     })();
   }, [currentPage]);
 
-  const totalPages = Math.ceil(dummyData.length / itemsPerPage);
-
   const copyToClipboard = async (wallet) => {
     try {
       await navigator.clipboard.writeText(wallet);
+      toast.success("Address copied!")
       // Display some notification or change the icon if needed
     } catch (err) {
       // Handle the error case
     }
-  };
-
-  const showToastMessage = (winkedAt) => {
-    toast.success(`You just winked at ${winkedAt}`, {
-      position: toast.POSITION.BOTTOM_CENTER,
-    });
   };
 
   const goToPage = (pageNumber) => {
@@ -138,24 +185,15 @@ function LeaderBoard() {
                       </tr>
                     </thead>
                     <tbody className='text-white text-[16px] bg-black'>
-                      {boardItems && boardItems.map((item, index) => (
+                      {(boardItems || userBoardItem) && [userBoardItem, ...boardItems.filter(result=>result.wallet.toLowerCase() !== accountAddress.toLowerCase())].map((item, index) => (
                         <tr key={index}>
                           <td className='text-center py-3 px-4'>{item.rank}</td>
-                          <td className='text-left py-3  px-4 flex items-center'>
+                          <td className={'text-left py-3  px-4 flex items-center ' + (index==0 ? 'text-[#7071E8]' : '')}>
                             {item.wallet}
                             <PiCopySimpleBold
                               className='h-5 w-5 ml-2 text-[#7071E8] cursor-pointer'
                               onClick={() => copyToClipboard(item.wallet)}
                             />
-                            {/* <FaRegSmileWink
-                            title='wink this user to request stake'
-                            className='text-center cursor-pointer text-[#7071E8] hover:bg-[#7071E8] rounded-full hover:text-white hover:scale-105 hover:border-2 hover:border-[#7071E8]'
-                            // onClick={() => {
-                            //   sendMessage('winked', item.wallet, '0');
-                            //   showToastMessage(item.wallet);
-                            // }}
-                          /> */}
-                            <ToastContainer />
                           </td>
                           <td className=' py-3 px-4 text-center'>
                             {item.credibilityScore}
@@ -184,6 +222,7 @@ function LeaderBoard() {
                       <button
                         key={i}
                         onClick={() => goToPage(i + 1)}
+                        disabled={currentPage === totalPages}
                         className={`w-full p-2 border-r text-base  hover:bg-gray-100 text-gray-600 bg-white ${
                           currentPage === i + 1
                             ? 'text-blue-600 bg-blue-100'
@@ -207,6 +246,13 @@ function LeaderBoard() {
           </div>
         </div>
       </div>
+      <ToastContainer 
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={true}
+        rtl={false}
+        theme="light"
+      />
     </motion.main>
   );
 }
