@@ -61,13 +61,18 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       twitterId: userData.data.id,
     } as IUser;
     const dbUser = await read(address);
-    if (dbUser) {
-      await update(dbUser, {twitterId: userData.data.id})
-    } else {
-      await create(user);
+    try {
+      if (dbUser) {
+        await update(dbUser, {twitterId: userData.data.id})
+      } else {
+        await create(user);
+      }
+      queueApproval(user);
+    } catch (err) {
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter already linked to some other wallet' });
+      return;
     }
 
-    queueApproval(user);
 
     res.status(httpStatus.OK);
     res.send({ message: 'Linked' });

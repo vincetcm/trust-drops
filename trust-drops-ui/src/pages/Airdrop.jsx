@@ -76,11 +76,13 @@ function Airdrop() {
       body: JSON.stringify(payload)
     }).then(async (res) => {
       const resp =  await res.json();
-      if (resp.error) {
-        toast.error("Twitter already linked with another wallet");
-      } else {
+      if (resp.message == "Linked") {
         setUser({approved: true});
         toast("You received 30 MAND", {icon: "🚀"});
+      } else if (resp.message) {
+        toast.error(resp.message);
+      } else {
+        toast.error("Could not link twitter, please refresh and try again!");
       }
       console.log("linking data reps - ", res.body);
       setLinkLoading(false);
