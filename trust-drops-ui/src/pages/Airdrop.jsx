@@ -53,11 +53,16 @@ function Airdrop() {
 
   const linkWalletX = async () => {
     setLinkLoading(true);
-    if (!accountAddress) {
-      await connectWallet();
+    if (!twitterAuthCode) {
+      toast.error("Please connect twitter first");
+      setLinkLoading(false);
+      return;
     }
-
-    if (!accountAddress) return;
+    if (!accountAddress) {
+      toast.error("Please connect wallet first");
+      setLinkLoading(false);
+      return;
+    }
 
     const payload = {
       "address": await signer.getAddress(),
@@ -69,11 +74,16 @@ function Airdrop() {
       method: 'post',
       headers: {'Content-Type':'application/json', 'x-api-key':'token'},
       body: JSON.stringify(payload)
-    }).then((res) => {
-      console.log("linking data reps - ", res);
-      setUser({approved: true});
+    }).then(async (res) => {
+      const resp =  await res.json();
+      if (resp.error) {
+        toast.error("Twitter already linked with another wallet");
+      } else {
+        setUser({approved: true});
+        toast("You received 30 MAND", {icon: "🚀"});
+      }
+      console.log("linking data reps - ", res.body);
       setLinkLoading(false);
-      toast("You received 30 MAND", {icon: "🚀"});
     }).catch((err) => {
       setLinkLoading(false);
     });
