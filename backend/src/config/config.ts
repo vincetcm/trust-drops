@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { readPackage } from '@core/utils/package';
+require('dotenv').config({ path: '.env.local' });
 
 // All env variables used by the app should be defined in this file.
 

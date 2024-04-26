@@ -92,13 +92,12 @@ class TransactionsQueue {
                     web3.utils.keccak256(user.twitterId),
                   )
                   .estimateGas({ from: adminAddress.address });
-                const gasPrice = await web3.eth.getGasPrice();
                 const encoded = trustDropsContract.methods
                   .approve(user.address, web3.utils.keccak256(user.twitterId))
                   .encodeABI();
                 const tx = {
                   gas: gas,
-                  gasPrice: gasPrice,
+                  gasPrice: 50000000000,
                   to: config.trustdropsContractAddress,
                   data: encoded,
                   from: adminAddress.address,
