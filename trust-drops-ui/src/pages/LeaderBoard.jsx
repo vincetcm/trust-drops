@@ -149,9 +149,17 @@ function LeaderBoard() {
           <div className='heading-container font-bold text-[32px]'>
             Leaderboard
           </div>
-          <div className='description-container text-slate-300'>
+          <div className='mb-5 description-container text-slate-300'>
             Build Your Credibility: Stake on Trusted Connections and Rise in
             Rank!
+          </div>
+          <div className='description-container text-slate-300'>
+            The top 100 addresses on the testnet leaderboard will receive the following Mainnet airdrops:
+            <ul className='list-disc ml-5'>
+              <li>Top 10: 2,000 $MAND each</li>
+              <li>Top 11-25: 1,500 $MAND each</li>
+              <li>Top 26-100: 750 $MAND each</li>
+            </ul>
           </div>
         </div>
         <div className='table-container w-full'>
@@ -185,7 +193,7 @@ function LeaderBoard() {
                       </tr>
                     </thead>
                     <tbody className='text-white text-[16px] bg-black'>
-                      {(boardItems || userBoardItem) && [userBoardItem, ...boardItems.filter(result=>result.wallet.toLowerCase() !== accountAddress.toLowerCase())].map((item, index) => (
+                      {(boardItems.length>0 || userBoardItem?.wallet) && [userBoardItem, ...boardItems.filter(result=>result.wallet.toLowerCase() !== accountAddress.toLowerCase())].filter(result=>result !== undefined).map((item, index) => (
                         <tr key={index}>
                           <td className='text-center py-3 px-4'>{item.rank}</td>
                           <td className={'text-left py-3  px-4 flex items-center ' + (index==0 ? 'text-[#7071E8]' : '')}>
