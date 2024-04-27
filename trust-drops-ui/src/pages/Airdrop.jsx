@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AirdropImg from '../assets/airdropImage.svg';
 import AirdropImg2 from '../assets/airdropImage2.svg';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DataContext } from '../context/DataContext';
 import { motion } from 'framer-motion';
 import ClipLoader from "react-spinners/ClipLoader";
@@ -15,6 +15,7 @@ function Airdrop() {
   const [linkLoading, setLinkLoading] = useState(false);
   const { search } = useLocation();
   const { connectWallet, signer, accountAddress } = useContext(DataContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log("search - ", search);
@@ -82,6 +83,7 @@ function Airdrop() {
       } else if (resp.message) {
         toast.error(resp.message);
       } else {
+        navigate("/airdrop", { replace: true });
         toast.error("Could not link twitter, please refresh and try again!");
       }
       console.log("linking data reps - ", res.body);
