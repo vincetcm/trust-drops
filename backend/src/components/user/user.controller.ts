@@ -12,6 +12,7 @@ import {
 import { IUser } from '@components/user/user.interface';
 import config from '@config/config';
 const STATE = 'trustdrops';
+const CODE_CHALLENGE= 'a543d136-2cc0-4651-b571-e972bf116556';
 
 const readUser = async (req: Request, res: Response) => {
   res.status(httpStatus.OK);
@@ -21,7 +22,8 @@ const readUser = async (req: Request, res: Response) => {
 const getUserOauthUrl = async (req: Request, res: Response) => {
   const authUrl = authClient.generateAuthURL({
     state: STATE,
-    code_challenge_method: 's256',
+    code_challenge_method: 'plain',
+    code_challenge: CODE_CHALLENGE
   });
   res.send({ url: authUrl });
 };
@@ -50,7 +52,11 @@ const linkUserTwitter = async (req: Request, res: Response) => {
     if (!isSignatureValid(address as string, signature as string)) {
       return res.send({ error: 'Signature invalid!' });
     }
-
+    authClient.generateAuthURL({
+      state: STATE,
+      code_challenge_method: 'plain',
+      code_challenge: CODE_CHALLENGE
+    });
     await authClient.requestAccessToken(code as string);
     const userData = await twitterClient.users.findMyUser();
     console.log('userData - ', userData);
