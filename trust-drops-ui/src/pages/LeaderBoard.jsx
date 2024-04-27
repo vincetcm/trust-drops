@@ -19,7 +19,7 @@ function LeaderBoard() {
   // Check the value of sendMessage
   // const [isModalOpen, setModalOpen] = useState(openModal);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(100);
   const [boardItems, setBoardItems] = useState([]);
   const [userBoardItem, setUserBoardItem] = useState();
   const [totalPages, setTotalPages] = useState(1);
@@ -196,7 +196,7 @@ function LeaderBoard() {
                       {(boardItems.length>0 || userBoardItem?.wallet) && [userBoardItem, ...boardItems.filter(result=>result.wallet.toLowerCase() !== accountAddress.toLowerCase())].filter(result=>result !== undefined).map((item, index) => (
                         <tr key={index}>
                           <td className='text-center py-3 px-4'>{item.rank}</td>
-                          <td className={'text-left py-3  px-4 flex items-center ' + (index==0 ? 'text-[#7071E8]' : '')}>
+                          <td className={'text-left py-3  px-4 flex items-center ' + (item.wallet==accountAddress ? 'text-[#7071E8]' : '')}>
                             {item.wallet}
                             <PiCopySimpleBold
                               className='h-5 w-5 ml-2 text-[#7071E8] cursor-pointer'
