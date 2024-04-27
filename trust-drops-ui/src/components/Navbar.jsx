@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import LeaderBoardModal from './LeaderBoardModal';
 import { DataContext } from '../context/DataContext';
 import Mande from '../assets/mandeLogo.svg';
+import Twitter from '../assets/twitter.svg';
+import Discord from '../assets/discord.svg';
 
 const ethers = require('ethers');
 
@@ -128,6 +130,8 @@ function Navbar() {
           >
             Leaderboard
           </Link>
+          <a href="https://twitter.com/MandeNetwork" target="_blank"><img src={Twitter} width={25} height={25} className='cursor-pointer'></img></a>
+          <a href="https://discord.gg/9Ugch3fRC2" target="_blank"><img src={Discord} width={25} height={25} className='cursor-pointer'></img></a>
           {accountAddress && accountAddress.length>0 && (<div className='wallet-address border-2 border-white px-2 text-[#7071E8] bg-white text-xl flex items-center '>
             {formatAddress(accountAddress)}
           </div>)}
