@@ -4,11 +4,11 @@ import {
   create,
   read,
   update,
-  authClient,
-  twitterClient,
   isSignatureValid,
   queueApproval,
+  authClient
 } from '@components/user/user.service';
+import { Client, auth } from 'twitter-api-sdk';
 import { IUser } from '@components/user/user.interface';
 import config from '@config/config';
 const STATE = 'trustdrops';
@@ -52,13 +52,21 @@ const linkUserTwitter = async (req: Request, res: Response) => {
     if (!isSignatureValid(address as string, signature as string)) {
       return res.send({ error: 'Signature invalid!' });
     }
-    authClient.generateAuthURL({
+
+    const authClientLocal = new auth.OAuth2User({
+      client_id: config.twitterClientId as string,
+      client_secret: config.twitterClientSecret as string,
+      callback: `${config.baseApiUrl}callback`,
+      scopes: ['tweet.read', 'users.read'],
+    });
+    authClientLocal.generateAuthURL({
       state: STATE,
       code_challenge_method: 'plain',
       code_challenge: CODE_CHALLENGE
     });
-    await authClient.requestAccessToken(code as string);
-    const userData = await twitterClient.users.findMyUser();
+    await authClientLocal.requestAccessToken(code as string);
+    const twitterClientLocal = new Client(authClientLocal);
+    const userData = await twitterClientLocal.users.findMyUser();
     console.log('userData - ', userData);
 
     const user = {
