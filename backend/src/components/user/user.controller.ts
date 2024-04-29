@@ -57,7 +57,7 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       client_id: config.twitterClientId as string,
       client_secret: config.twitterClientSecret as string,
       callback: `${config.baseApiUrl}callback`,
-      scopes: ['tweet.read', 'users.read'],
+      scopes: ['tweet.read', 'users.read', 'follows.read', 'follows.write'],
     });
     authClientLocal.generateAuthURL({
       state: STATE,
@@ -66,9 +66,20 @@ const linkUserTwitter = async (req: Request, res: Response) => {
     });
     await authClientLocal.requestAccessToken(code as string);
     const twitterClientLocal = new Client(authClientLocal);
-    const userData = await twitterClientLocal.users.findMyUser();
+    const userData = await twitterClientLocal.users.findMyUser({
+      "user.fields": [
+        "id",
+        "name",
+        "public_metrics",
+        "username",
+      ],
+    });
+    await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
     console.log('userData - ', userData);
-
+    if (userData.data.public_metrics.followers_count < 10) {
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter account must have atleast 10 followers!' });
+      return;
+    }
     address = address.toLowerCase();
     const user = {
       address,

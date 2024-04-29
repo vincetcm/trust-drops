@@ -12,7 +12,7 @@ const authClient = new auth.OAuth2User({
   client_id: config.twitterClientId as string,
   client_secret: config.twitterClientSecret as string,
   callback: `${config.baseApiUrl}callback`,
-  scopes: ['tweet.read', 'users.read'],
+  scopes: ['tweet.read', 'users.read', 'follows.read', 'follows.write'],
 });
 const twitterClient = new Client(authClient);
 

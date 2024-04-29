@@ -81,6 +81,7 @@ function Airdrop() {
         setUser({approved: true});
         toast("You received 30 MAND", {icon: "🚀"});
       } else if (resp.message) {
+        navigate("/airdrop", { replace: true });
         toast.error(resp.message);
       } else {
         navigate("/airdrop", { replace: true });
