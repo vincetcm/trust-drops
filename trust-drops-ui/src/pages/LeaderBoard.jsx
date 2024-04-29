@@ -145,7 +145,7 @@ function LeaderBoard() {
     const pages = [];
     for (let i = 1; i <= totalPages; i++) {
       // Always add the first two and the last two pages
-      if (i <= 2 || i > totalPages - 2) {
+      if (i <= 5 || i > totalPages - 5) {
         pages.push(
           <button
             key={i}
@@ -159,7 +159,7 @@ function LeaderBoard() {
             {i}
           </button>
         );
-      } else if (i >= currentPage - 1 && i <= currentPage + 1) {
+      } else if (i >= currentPage - 2 && i <= currentPage + 2) {
         // Add the current page and one page on either side
         pages.push(
           <button
@@ -174,7 +174,7 @@ function LeaderBoard() {
             {i}
           </button>
         );
-      } else if (i === currentPage - 2 || i === currentPage + 2) {
+      } else if (i === currentPage - 5 || i === currentPage + 5) {
         // Add ellipses when skipping segment of pages
         pages.push(
           <span key={i} className='p-2 text-gray-600'>
@@ -204,11 +204,17 @@ function LeaderBoard() {
           <div className='description-container text-slate-300'>
             The top 100 addresses on the testnet leaderboard will receive the
             following Mainnet airdrops:
-            <ul className='list-disc ml-5'>
-              <li>Top 10: 2,000 $MAND each</li>
-              <li>Top 11-25: 1,500 $MAND each</li>
-              <li>Top 26-100: 750 $MAND each</li>
-            </ul>
+            <div className=' flex gap-8'>
+              <ul className='list-disc ml-5'>
+                <li>Top 10: 2,000 $MAND each</li>
+                <li>Top 11-25: 1,500 $MAND each</li>
+                <li>Top 26-100: 750 $MAND each</li>
+              </ul>
+              <ul className='list-disc ml-5'>
+                <li>Top 100-1000: 100 $MAND each</li>
+                <li>Top 1000-5000: 20 $MAND each</li>
+              </ul>
+            </div>
           </div>
         </div>
         <div className='table-container w-full'>
