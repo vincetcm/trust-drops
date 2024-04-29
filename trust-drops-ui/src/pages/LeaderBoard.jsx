@@ -202,7 +202,7 @@ function LeaderBoard() {
             Rank!
           </div>
           <div className='description-container text-slate-300'>
-            The top 100 addresses on the testnet leaderboard will receive the
+            The top 5000 addresses on the testnet leaderboard will receive the
             following Mainnet airdrops:
             <div className=' flex gap-8'>
               <ul className='list-disc ml-5'>
