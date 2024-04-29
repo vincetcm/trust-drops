@@ -47,7 +47,7 @@ const queueTest = async (req: Request, res: Response) => {
 
 const linkUserTwitter = async (req: Request, res: Response) => {
   try {
-    const { code, address, signature } = req.body;
+    let { code, address, signature } = req.body;
 
     if (!isSignatureValid(address as string, signature as string)) {
       return res.send({ error: 'Signature invalid!' });
@@ -69,6 +69,7 @@ const linkUserTwitter = async (req: Request, res: Response) => {
     const userData = await twitterClientLocal.users.findMyUser();
     console.log('userData - ', userData);
 
+    address = address.toLowerCase();
     const user = {
       address,
       signature,
