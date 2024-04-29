@@ -33,22 +33,24 @@ function LeaderBoard() {
             usersCount
           }
         }
-      `
-  
+      `;
+
       const client = createClient({
         url: process.env.REACT_APP_SUBGRAPH_API,
         exchanges: [cacheExchange, fetchExchange],
-      })
-  
+      });
+
       const data = await client.query(countQuery).toPromise();
-      console.log("subgraph count data - ", data.data.aggregated.usersCount)
-      setTotalPages((parseInt(data.data.aggregated.usersCount / itemsPerPage)) + 1);
+      console.log('subgraph count data - ', data.data.aggregated.usersCount);
+      setTotalPages(
+        parseInt(data.data.aggregated.usersCount / itemsPerPage) + 1
+      );
     })();
   }, []);
 
   useEffect(() => {
     if (!accountAddress || !trustdropContract?.address) return;
-    
+
     (async () => {
       const credScore = await trustdropContract.reputation(accountAddress);
       const userRankQuery = `
@@ -57,15 +59,15 @@ function LeaderBoard() {
               id
             }
           }
-        `
-    
+        `;
+
       const client = createClient({
         url: process.env.REACT_APP_SUBGRAPH_API,
         exchanges: [cacheExchange, fetchExchange],
-      })
-  
+      });
+
       const rankData = await client.query(userRankQuery).toPromise();
-      const userRank = rankData.data.users.length+1;
+      const userRank = rankData.data.users.length + 1;
       const userQuery = `
         query {
           user(id: "${accountAddress}") {
@@ -76,16 +78,16 @@ function LeaderBoard() {
             credScoreDistributed
           }
         }
-      `
+      `;
       const userData = await client.query(userQuery).toPromise();
       const userBoardData = {
         rank: userRank,
         wallet: userData.data.user.address,
         credibilityScore: userData.data.user.credScoreAccrued,
         lockedMand: userData.data.user.tokenStaked,
-        credibilityGiven: userData.data.user.credScoreDistributed
-      }
-      console.log("userData - ", userBoardData);
+        credibilityGiven: userData.data.user.credScoreDistributed,
+      };
+      console.log('userData - ', userBoardData);
       setUserBoardItem(userBoardData);
     })();
   }, [accountAddress, trustdropContract]);
@@ -94,7 +96,9 @@ function LeaderBoard() {
     (async () => {
       const usersQuery = `
         query {
-          users(orderBy: credScoreAccrued, orderDirection: desc, first: ${itemsPerPage}, skip: ${(currentPage-1)*itemsPerPage}) {
+          users(orderBy: credScoreAccrued, orderDirection: desc, first: ${itemsPerPage}, skip: ${
+        (currentPage - 1) * itemsPerPage
+      }) {
             id
             address
             tokenStaked
@@ -102,23 +106,23 @@ function LeaderBoard() {
             credScoreDistributed
           }
         }
-      `
-  
+      `;
+
       const client = createClient({
         url: process.env.REACT_APP_SUBGRAPH_API,
         exchanges: [cacheExchange, fetchExchange],
-      })
-  
+      });
+
       const data = await client.query(usersQuery).toPromise();
       const leaderBoardData = data.data.users.map((el, idx) => {
         return {
-          rank: idx + 1 + ((currentPage-1)*itemsPerPage),
+          rank: idx + 1 + (currentPage - 1) * itemsPerPage,
           wallet: el.address,
           credibilityScore: el.credScoreAccrued,
           lockedMand: el.tokenStaked,
-          credibilityGiven: el.credScoreDistributed
-        }
-      })
+          credibilityGiven: el.credScoreDistributed,
+        };
+      });
       setBoardItems(leaderBoardData);
     })();
   }, [currentPage]);
@@ -126,7 +130,7 @@ function LeaderBoard() {
   const copyToClipboard = async (wallet) => {
     try {
       await navigator.clipboard.writeText(wallet);
-      toast.success("Address copied!")
+      toast.success('Address copied!');
       // Display some notification or change the icon if needed
     } catch (err) {
       // Handle the error case
@@ -135,6 +139,51 @@ function LeaderBoard() {
 
   const goToPage = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  const paginationItems = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      // Always add the first two and the last two pages
+      if (i <= 2 || i > totalPages - 2) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => goToPage(i)}
+            className={`p-2 ${
+              currentPage === i
+                ? 'text-[#7071E8] bg-white'
+                : 'text-gray-600 bg-white'
+            }`}
+          >
+            {i}
+          </button>
+        );
+      } else if (i >= currentPage - 1 && i <= currentPage + 1) {
+        // Add the current page and one page on either side
+        pages.push(
+          <button
+            key={i}
+            onClick={() => goToPage(i)}
+            className={`p-2 ${
+              currentPage === i
+                ? 'text-[#7071E8] bg-white '
+                : 'text-gray-600 bg-white'
+            }`}
+          >
+            {i}
+          </button>
+        );
+      } else if (i === currentPage - 2 || i === currentPage + 2) {
+        // Add ellipses when skipping segment of pages
+        pages.push(
+          <span key={i} className='p-2 text-gray-600'>
+            ...
+          </span>
+        );
+      }
+    }
+    return pages;
   };
 
   return (
@@ -153,7 +202,8 @@ function LeaderBoard() {
             Rank!
           </div>
           <div className='description-container text-slate-300'>
-            The top 100 addresses on the testnet leaderboard will receive the following Mainnet airdrops:
+            The top 100 addresses on the testnet leaderboard will receive the
+            following Mainnet airdrops:
             <ul className='list-disc ml-5'>
               <li>Top 10: 2,000 $MAND each</li>
               <li>Top 11-25: 1,500 $MAND each</li>
@@ -192,59 +242,69 @@ function LeaderBoard() {
                       </tr>
                     </thead>
                     <tbody className='text-white text-[16px] bg-black'>
-                      {(boardItems.length>0 || userBoardItem?.wallet) && [userBoardItem, ...boardItems.filter(result=>result.wallet.toLowerCase() !== accountAddress.toLowerCase())].filter(result=>result !== undefined).map((item, index) => (
-                        <tr key={index}>
-                          <td className='text-center py-3 px-4'>{item.rank}</td>
-                          <td className={'text-left py-3  px-4 flex items-center ' + (item.wallet.toLowerCase()==accountAddress.toLowerCase() ? 'text-[#7071E8]' : '')}>
-                            {item.wallet}
-                            <PiCopySimpleBold
-                              className='h-5 w-5 ml-2 text-[#7071E8] cursor-pointer'
-                              onClick={() => copyToClipboard(item.wallet)}
-                            />
-                          </td>
-                          <td className=' py-3 px-4 text-center'>
-                            {item.credibilityScore}
-                          </td>
-                          <td className='text-center py-3 px-4'>
-                            {parseFloat(ethers.utils.formatUnits(item.lockedMand)).toFixed(2)}
-                          </td>
-                          <td className='text-center py-3 px-4'>
-                            {item.credibilityGiven}
-                          </td>
-                        </tr>
-                      ))}
+                      {(boardItems.length > 0 || userBoardItem?.wallet) &&
+                        [
+                          userBoardItem,
+                          ...boardItems.filter(
+                            (result) =>
+                              result.wallet.toLowerCase() !==
+                              accountAddress.toLowerCase()
+                          ),
+                        ]
+                          .filter((result) => result !== undefined)
+                          .map((item, index) => (
+                            <tr key={index}>
+                              <td className='text-center py-3 px-4'>
+                                {item.rank}
+                              </td>
+                              <td
+                                className={
+                                  'text-left py-3  px-4 flex items-center ' +
+                                  (item.wallet.toLowerCase() ==
+                                  accountAddress.toLowerCase()
+                                    ? 'text-[#7071E8]'
+                                    : '')
+                                }
+                              >
+                                {item.wallet}
+                                <PiCopySimpleBold
+                                  className='h-5 w-5 ml-2 text-[#7071E8] cursor-pointer'
+                                  onClick={() => copyToClipboard(item.wallet)}
+                                />
+                              </td>
+                              <td className=' py-3 px-4 text-center'>
+                                {item.credibilityScore}
+                              </td>
+                              <td className='text-center py-3 px-4'>
+                                {parseFloat(
+                                  ethers.utils.formatUnits(item.lockedMand)
+                                ).toFixed(2)}
+                              </td>
+                              <td className='text-center py-3 px-4'>
+                                {item.credibilityGiven}
+                              </td>
+                            </tr>
+                          ))}
                     </tbody>
                   </table>
                 </div>
-                <div className='flex flex-col xs:flex-row items-center xs:justify-between mt-4  '>
-                  <div className='flex items-center'>
+
+                <div className='flex flex-col xs:flex-row items-center xs:justify-between mt-4'>
+                  <div className='flex overflow-x-auto'>
                     <button
+                      className=' p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0]'
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className='w-full p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0] '
                     >
-                      <span className=''>&lt;&lt;</span>
+                      &lt;&lt;
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => goToPage(i + 1)}
-                        disabled={currentPage === totalPages}
-                        className={`w-full p-2 border-r text-base  hover:bg-gray-100 text-gray-600 bg-white ${
-                          currentPage === i + 1
-                            ? 'text-blue-600 bg-blue-100'
-                            : ''
-                        }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
+                    {paginationItems()}
                     <button
+                      className=' p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0]'
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className='w-full p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0]'
                     >
-                      <span className=''>&gt;&gt;</span>
+                      &gt;&gt;
                     </button>
                   </div>
                 </div>
@@ -253,12 +313,12 @@ function LeaderBoard() {
           </div>
         </div>
       </div>
-      <ToastContainer 
-        position="bottom-right"
+      <ToastContainer
+        position='bottom-right'
         autoClose={5000}
         hideProgressBar={true}
         rtl={false}
-        theme="light"
+        theme='light'
       />
     </motion.main>
   );
