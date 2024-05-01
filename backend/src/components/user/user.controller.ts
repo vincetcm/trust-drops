@@ -48,6 +48,12 @@ const queueTest = async (req: Request, res: Response) => {
 const linkUserTwitter = async (req: Request, res: Response) => {
   try {
     let { code, address, signature } = req.body;
+    address = address.toLowerCase();
+    const dbUser = await read(address);
+    if (dbUser && !dbUser.approved) {
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'Wallet already approved' });
+      return;
+    }
 
     if (!isSignatureValid(address as string, signature as string)) {
       return res.send({ error: 'Signature invalid!' });
@@ -74,19 +80,18 @@ const linkUserTwitter = async (req: Request, res: Response) => {
         "username",
       ],
     });
-    await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
     console.log('userData - ', userData);
-    if (userData.data.public_metrics.followers_count < 10) {
-      res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter account must have atleast 10 followers!' });
+    if (userData.data.public_metrics.followers_count < 25) {
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter account must have atleast 25 followers!' });
       return;
     }
-    address = address.toLowerCase();
+    await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
+    console.log('followed mande twitter');
     const user = {
       address,
       signature,
       twitterId: userData.data.id,
     } as IUser;
-    const dbUser = await read(address);
     try {
       if (dbUser) {
         await update(dbUser, {twitterId: userData.data.id})
