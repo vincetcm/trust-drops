@@ -271,6 +271,16 @@ function Dashboard() {
 
   async function loadUserData() {
     console.log('loading user data');
+    
+    try {
+      fetch(`${process.env.REACT_APP_API_URL}userRank/${accountAddress}`)
+        .then(response => response.json())
+        .then(data => setUserRank(data.rank))
+        .catch(err => console.log(err));
+    } catch (err) {
+      console.log("could not fetch user details")
+    }
+    
     try {
       const stakesSentQuery = gql`
         query GetStakesSent($address: String!) {
@@ -383,27 +393,6 @@ function Dashboard() {
       setMandBalance(truncateAmount(mandBalance));
     } catch (err) {
       console.log('check err setMandBalance -  ', err);
-    }
-
-    try {
-      const usersQuery = `
-          query {
-            users(where: {credScoreAccrued_gt: ${credScore.toString()}}) {
-              id
-            }
-          }
-        `
-    
-      const client = createClient({
-        url: process.env.REACT_APP_SUBGRAPH_API,
-        exchanges: [cacheExchange, fetchExchange],
-      })
-  
-      const data = await client.query(usersQuery).toPromise();
-      console.log("check eank - ", data)
-      setUserRank(data.data.users.length+1);
-    } catch (err) {
-      console.log("fetching rank failed", err);
     }
   }
 

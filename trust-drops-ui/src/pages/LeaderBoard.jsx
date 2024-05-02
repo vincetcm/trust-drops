@@ -52,22 +52,14 @@ function LeaderBoard() {
     if (!accountAddress || !trustdropContract?.address) return;
 
     (async () => {
-      const credScore = await trustdropContract.reputation(accountAddress);
-      const userRankQuery = `
-          query {
-            users(where: {credScoreAccrued_gt: ${credScore.toString()}}) {
-              id
-            }
-          }
-        `;
-
-      const client = createClient({
-        url: process.env.REACT_APP_SUBGRAPH_API,
-        exchanges: [cacheExchange, fetchExchange],
-      });
-
-      const rankData = await client.query(userRankQuery).toPromise();
-      const userRank = rankData.data.users.length + 1;
+      let userRank = 0;
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}userRank/${accountAddress}`);
+        const userRankJson = await res.json();
+        userRank = userRankJson.rank;
+      } catch (err) {
+        console.log("could not fetch user details")
+      }
       const userQuery = `
         query {
           user(id: "${accountAddress}") {
@@ -79,6 +71,10 @@ function LeaderBoard() {
           }
         }
       `;
+      const client = createClient({
+        url: process.env.REACT_APP_SUBGRAPH_API,
+        exchanges: [cacheExchange, fetchExchange],
+      });
       const userData = await client.query(userQuery).toPromise();
       const userBoardData = {
         rank: userRank,

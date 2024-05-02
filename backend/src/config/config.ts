@@ -27,6 +27,7 @@ const envsSchema = Joi.object()
     TRUSTDROPS_CONTRACT_ADDRESS: Joi.string().required(),
     ADMIN_KEY: Joi.string().required(),
     UI_ENDPOINT: Joi.string().required(),
+    SUBGRAPH_ENDPOINT: Joi.string().required(),
   })
   .unknown(true);
 
@@ -58,4 +59,5 @@ export default {
   trustdropsContractAddress: envVars.TRUSTDROPS_CONTRACT_ADDRESS,
   adminKey: envVars.ADMIN_KEY,
   uiEndpoint: envVars.UI_ENDPOINT,
+  subgraphEndpoint: envVars.SUBGRAPH_ENDPOINT,
 };

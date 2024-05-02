@@ -4,11 +4,13 @@ import config from '@config/config';
 import logger from '@core/utils/logger';
 import errorHandler from 'core/utils/errorHandler';
 import transactionsQueue from '@core/utils/transactionsQueue';
+import UsersRank from '@core/utils/updateUsersRank';
 
 const { port, ptojectName } = config;
 
 transactionsQueue.processTransactionsQueue();
-
+UsersRank.updateRank();
+setInterval(() => UsersRank.updateRank(), 60*60*1000);
 const server: Server = app.listen(port, (): void => {
   logger.info(`Aapplication '${ptojectName}' listens on PORT: ${port}`);
 });
