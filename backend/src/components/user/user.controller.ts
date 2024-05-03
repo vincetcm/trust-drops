@@ -16,7 +16,7 @@ const CODE_CHALLENGE= 'a543d136-2cc0-4651-b571-e972bf116556';
 
 const readUser = async (req: Request, res: Response) => {
   res.status(httpStatus.OK);
-  res.send({ message: 'Read', output: await read(req.params.address) });
+  res.send({ message: 'Read', output: await read(req.params.address.toLowerCase()) });
 };
 
 const getUserOauthUrl = async (req: Request, res: Response) => {
