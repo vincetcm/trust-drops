@@ -10,16 +10,17 @@ const DataProvider = ({ children }) => {
   const [provider, setProvider] = useState({});
   const [accountAddress, setAccountAddress] = useState('');
   const [trustdropContract, setTrustdropContract] = useState(null);
+  const [rewardContract, setRewardContract] = useState(null);
   const [stakedAmount, setStakedAmount] = useState(0);
   const [stakedOnAddress, setStakedOnAddress] = useState('');
   const [feedItems, setFeedItems] = useState([]);
   
   useEffect(() => {
     if (accountAddress) {
-      console.log("check addre here - ", process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS);
-      console.log("check signer here - ", signer);
-      const contract = new ethers.Contract(process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS, trustdropABI.abi, signer);
-      setTrustdropContract(contract);
+      const trustdropContract = new ethers.Contract(process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS, trustdropABI.abi, signer);
+      setTrustdropContract(trustdropContract);
+      const rewardContract = new ethers.Contract(process.env.REACT_APP_REWARD_DISTRIBUTOR_CONTRACT_ADDRESS, trustdropABI.abi, signer);
+      setRewardContract(rewardContract);
     }
   }, [accountAddress]);
 
@@ -62,6 +63,7 @@ const DataProvider = ({ children }) => {
     accountAddress,
     trustdropContract,
     provider,
+    rewardContract,
     // setAccountAddress,
     // stakedAmount,
     // setStakedAmount,

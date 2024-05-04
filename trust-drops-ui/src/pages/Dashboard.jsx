@@ -64,7 +64,7 @@ function Dashboard() {
   const [loadingUnstakeTx, setLoadingUnstakeTx] = useState(false);
   const [loadingClaimTx, setLoadingClaimTx] = useState(false);
 
-  const { accountAddress, trustdropContract, provider, connectWallet } =
+  const { accountAddress, trustdropContract, provider, connectWallet, rewardContract } =
     useContext(DataContext);
 
   console.log('accountAddress', accountAddress);
@@ -248,7 +248,7 @@ function Dashboard() {
     setLoadingClaimTx(true);
     // const estimation = await trustdropContract.estimateGas.claimTokens();
     try {
-      const claimTx = await trustdropContract.claimTokens();
+      const claimTx = await rewardContract.claimTokens();
 
       await claimTx.wait();
       console.log('Claim transaction hash', claimTx.hash);
@@ -371,7 +371,7 @@ function Dashboard() {
     }
 
     try {
-      const allocation = await trustdropContract.allocation(accountAddress);
+      const allocation = await rewardContract.allocation(accountAddress);
       setAllocatedTokens(truncateAmount(allocation));
     } catch (err) {
       console.log('check err setAllocatedTokens -  ', err);
