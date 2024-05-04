@@ -11,7 +11,7 @@ import { RiLiveLine } from 'react-icons/ri';
 import { ethers } from 'ethers';
 import trustdropABI from '../abis/trustdropABI.json';
 import { createClient, cacheExchange, fetchExchange } from 'urql';
-import ClipLoader from "react-spinners/ClipLoader";
+import ClipLoader from 'react-spinners/ClipLoader';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
@@ -33,15 +33,15 @@ import infoIcon from '../assets/infoIcon.svg';
 import { motion } from 'framer-motion';
 import { gql } from '@urql/core';
 
-moment.updateLocale("en", {
+moment.updateLocale('en', {
   relativeTime: {
-    future: (diff) => (diff == "Just now" ? diff : `in ${diff}`),
-    past: (diff) => (diff == "Just now" ? diff : `${diff} ago`),
-    s: "Just now",
-    ss: "Just now",
-    m: "a min",
-    mm: "%d mins"
-  }
+    future: (diff) => (diff == 'Just now' ? diff : `in ${diff}`),
+    past: (diff) => (diff == 'Just now' ? diff : `${diff} ago`),
+    s: 'Just now',
+    ss: 'Just now',
+    m: 'a min',
+    mm: '%d mins',
+  },
 });
 
 function Dashboard() {
@@ -65,7 +65,8 @@ function Dashboard() {
   const [loadingUnstakeTx, setLoadingUnstakeTx] = useState(false);
   const [loadingClaimTx, setLoadingClaimTx] = useState(false);
 
-  const { accountAddress, trustdropContract, provider, connectWallet } = useContext(DataContext);
+  const { accountAddress, trustdropContract, provider, connectWallet } =
+    useContext(DataContext);
 
   console.log('accountAddress', accountAddress);
 
@@ -105,7 +106,7 @@ function Dashboard() {
   const copyToClipboard = async (wallet) => {
     try {
       await navigator.clipboard.writeText(wallet);
-      toast.success("Address copied!")
+      toast.success('Address copied!');
     } catch (err) {
       // Handle the error case
     }
@@ -116,11 +117,11 @@ function Dashboard() {
       await connectWallet();
     }
     if (!ethers.utils.isAddress(stakeForAddress)) {
-      toast.error("Please enter valid address");
+      toast.error('Please enter valid address');
       return;
     }
     if (!stakeAmount) {
-      toast.error("Please enter valid amount");
+      toast.error('Please enter valid amount');
       return;
     }
     setLoadingStakeTx(true);
@@ -129,23 +130,20 @@ function Dashboard() {
       //   stakeForAddress,
       //   {value: ethers.utils.parseUnits(stakeAmount)}
       // );
-      console.log("check contract - ", trustdropContract);
-      const stakeTx = await trustdropContract.stake(
-        stakeForAddress,
-        {
-          value: ethers.utils.parseUnits(stakeAmount),
-          // gasPrice: estimation,
-        }
-      );
+      console.log('check contract - ', trustdropContract);
+      const stakeTx = await trustdropContract.stake(stakeForAddress, {
+        value: ethers.utils.parseUnits(stakeAmount),
+        // gasPrice: estimation,
+      });
       await stakeTx.wait();
 
       console.log('Stake transaction hash', stakeTx.hash);
       console.log('Stake function executed');
-      toast.success("Stake successfull");
+      toast.success('Stake successfull');
       setLoadingStakeTx(false);
     } catch (e) {
       console.log(e);
-      if (e && e.data && e.data.message){
+      if (e && e.data && e.data.message) {
         toast.error(e.data.message);
       } else {
         const err = JSON.stringify(e);
@@ -160,11 +158,11 @@ function Dashboard() {
       await connectWallet();
     }
     if (!ethers.utils.isAddress(stakeForAddress)) {
-      toast.error("Please enter valid address");
+      toast.error('Please enter valid address');
       return;
     }
     if (!stakeAmount) {
-      toast.error("Please enter valid amount");
+      toast.error('Please enter valid amount');
       return;
     }
     setLoadingUnstakeTx(true);
@@ -176,7 +174,7 @@ function Dashboard() {
     try {
       const unstakeTx = await trustdropContract.unstake(
         stakeForAddress,
-        ethers.utils.parseUnits(stakeAmount),
+        ethers.utils.parseUnits(stakeAmount)
         // {
         //   gasPrice: estimation,
         // }
@@ -185,11 +183,11 @@ function Dashboard() {
 
       console.log('Stake transaction hash', unstakeTx.hash);
       console.log('Unstake function executed');
-      toast.success("Unstake successfull");
+      toast.success('Unstake successfull');
       setLoadingUnstakeTx(false);
     } catch (e) {
       console.log(e);
-      if (e && e.data && e.data.message){
+      if (e && e.data && e.data.message) {
         toast.error(e.data.message);
       } else {
         const err = JSON.stringify(e);
@@ -205,8 +203,12 @@ function Dashboard() {
         className='live-feed-container h-[60px]   min-w-[280px] max-w-[30%]
      flex rounded-full   items-center mb-4  bg-white gap-2 px-2 '
       >
-        {props.data.type == "Staked" && <img src={LockedMand} className='icon-container h-10 w-10' />}
-        {props.data.type == "Unstaked" && <img src={UnlockedMand} className='icon-container h-10 w-10' />}
+        {props.data.type == 'Staked' && (
+          <img src={LockedMand} className='icon-container h-10 w-10' />
+        )}
+        {props.data.type == 'Unstaked' && (
+          <img src={UnlockedMand} className='icon-container h-10 w-10' />
+        )}
         <div className='data-container  flex flex-col  flex-1'>
           <div className='top-container flex text-black gap-2 items-center justify-between pr-2 '>
             <div className='left-container'>
@@ -217,9 +219,17 @@ function Dashboard() {
             <div className='icon-super-container  items-center gap-2'>
               <div className='icon-container flex items-center gap-2'>
                 <img src={MandeLogo} className='icon-container h-6' />
-                <span className='font-bold'>{parseFloat(ethers.utils.formatUnits(props.data.amount)).toFixed(2)}</span>
+                <span className='font-bold'>
+                  {parseFloat(
+                    ethers.utils.formatUnits(props.data.amount)
+                  ).toFixed(2)}
+                </span>
               </div>
-              <div className='time text-[14px]  text-slate-500'>{moment(parseInt(props.data.timestamp.toString())*1000).fromNow()}</div>
+              <div className='time text-[14px]  text-slate-500'>
+                {moment(
+                  parseInt(props.data.timestamp.toString()) * 1000
+                ).fromNow()}
+              </div>
             </div>
           </div>
         </div>
@@ -232,7 +242,7 @@ function Dashboard() {
       await connectWallet();
     }
     if (allocatedTokens == 0) {
-      toast.error("No rewards to claim");
+      toast.error('No rewards to claim');
       return;
     }
     console.log('Claim function executed');
@@ -243,12 +253,12 @@ function Dashboard() {
 
       await claimTx.wait();
       console.log('Claim transaction hash', claimTx.hash);
-      toast.success("Claim successfull");
+      toast.success('Claim successfull');
       setLoadingClaimTx(false);
-      setAllocatedTokens(0.0000);
+      setAllocatedTokens(0.0);
     } catch (e) {
       setLoadingClaimTx(false);
-      if (e && e.data && e.data.message){
+      if (e && e.data && e.data.message) {
         toast.error(e.data.message);
       } else {
         const err = JSON.stringify(e);
@@ -256,7 +266,6 @@ function Dashboard() {
       }
       console.log('claim failed');
     }
-
   };
 
   const handleTabSwitch = (tabName) => {
@@ -271,20 +280,20 @@ function Dashboard() {
 
   async function loadUserData() {
     console.log('loading user data');
-    
+
     try {
       fetch(`${process.env.REACT_APP_API_URL}userRank/${accountAddress}`)
-        .then(response => response.json())
-        .then(data => setUserRank(data.rank))
-        .catch(err => console.log(err));
+        .then((response) => response.json())
+        .then((data) => setUserRank(data.rank))
+        .catch((err) => console.log(err));
     } catch (err) {
-      console.log("could not fetch user details")
+      console.log('could not fetch user details');
     }
-    
+
     try {
       const stakesSentQuery = gql`
         query GetStakesSent($address: String!) {
-          stakes(where: {staker_: {id: $address}}) {
+          stakes(where: { staker_: { id: $address } }) {
             amount
             credScore
             candidate {
@@ -292,20 +301,20 @@ function Dashboard() {
             }
           }
         }
-      `
+      `;
 
       const client = createClient({
         url: process.env.REACT_APP_SUBGRAPH_API,
         exchanges: [cacheExchange, fetchExchange],
-      })
-  
-      const data = await client.query(stakesSentQuery, {address: accountAddress}).toPromise();
+      });
+
+      const data = await client
+        .query(stakesSentQuery, { address: accountAddress })
+        .toPromise();
       const stakesData = data.data.stakes.toReversed().map((data) => {
         return {
           address: data.candidate.id,
-          stake: parseFloat(
-            ethers.utils.formatUnits(data.amount)
-          ).toFixed(2),
+          stake: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(2),
           credibility: parseFloat(data.credScore).toFixed(2),
         };
       });
@@ -317,7 +326,7 @@ function Dashboard() {
     try {
       const stakesSentQuery = gql`
         query GetStakesSent($address: String!) {
-          stakes(where: {candidate_: {id: $address}}) {
+          stakes(where: { candidate_: { id: $address } }) {
             amount
             credScore
             staker {
@@ -325,20 +334,22 @@ function Dashboard() {
             }
           }
         }
-      `
+      `;
 
       const client = createClient({
         url: process.env.REACT_APP_SUBGRAPH_API,
         exchanges: [cacheExchange, fetchExchange],
-      })
-  
-      const data = await client.query(stakesSentQuery, {address: accountAddress}).toPromise();
+      });
+
+      const data = await client
+        .query(stakesSentQuery, { address: accountAddress })
+        .toPromise();
       const receivedData = data.data.stakes.toReversed().map((data) => {
         return {
           address: data.staker.id,
-          received: parseFloat(
-            ethers.utils.formatUnits(data.amount)
-          ).toFixed(2),
+          received: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(
+            2
+          ),
           credibilityGained: parseFloat(data.credScore).toFixed(2),
         };
       });
@@ -347,28 +358,42 @@ function Dashboard() {
       console.log('check err receivedData -  ', err);
     }
 
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const currentBlock = await provider.getBlockNumber();
-      let allStakesEvents = await trustdropContract.queryFilter(trustdropContract.filters.Staked(), currentBlock - 10000, currentBlock)
-      let allUnstakesEvents = await trustdropContract.queryFilter(trustdropContract.filters.Unstaked(), currentBlock - 10000, currentBlock)
-      let allEvents = [...allStakesEvents, ...allUnstakesEvents] // concatenate arrays using spread operator
-      allEvents.sort((a, b) => parseFloat(`${a.blockNumber}.${a.transactionIndex}`) - parseFloat(`${b.blockNumber}.${b.transactionIndex}`))
-      const combinedLogData = allEvents.toReversed().map((parsedLog) => {
-        return {
-          type: parsedLog.event,
-          staker: parsedLog.args.staker,
-          amount: parsedLog.args.amount.toString(),
-          timestamp: parsedLog.args.timestamp.toString(),
-        };
-      });
-      setLiveFeedData(combinedLogData);
-    } catch (err) {
-      console.log('check err combined data -  ', err);
-    }
+    // try {
+    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //   const currentBlock = await provider.getBlockNumber();
+    //   let allStakesEvents = await trustdropContract.queryFilter(
+    //     trustdropContract.filters.Staked(),
+    //     currentBlock - 10000,
+    //     currentBlock
+    //   );
+    //   let allUnstakesEvents = await trustdropContract.queryFilter(
+    //     trustdropContract.filters.Unstaked(),
+    //     currentBlock - 10000,
+    //     currentBlock
+    //   );
+    //   let allEvents = [...allStakesEvents, ...allUnstakesEvents]; // concatenate arrays using spread operator
+    //   allEvents.sort(
+    //     (a, b) =>
+    //       parseFloat(`${a.blockNumber}.${a.transactionIndex}`) -
+    //       parseFloat(`${b.blockNumber}.${b.transactionIndex}`)
+    //   );
+    //   const combinedLogData = allEvents.toReversed().map((parsedLog) => {
+    //     return {
+    //       type: parsedLog.event,
+    //       staker: parsedLog.args.staker,
+    //       amount: parsedLog.args.amount.toString(),
+    //       timestamp: parsedLog.args.timestamp.toString(),
+    //     };
+    //   });
+    //   setLiveFeedData(combinedLogData);
+    // } catch (err) {
+    //   console.log('check err combined data -  ', err);
+    // }
     let credScore;
     try {
-      const stakedTokens = await trustdropContract.totalStakedByUser(accountAddress);
+      const stakedTokens = await trustdropContract.totalStakedByUser(
+        accountAddress
+      );
       setStakedBalance(truncateAmount(stakedTokens));
 
       credScore = await trustdropContract.reputation(accountAddress);
@@ -378,18 +403,14 @@ function Dashboard() {
     }
 
     try {
-      const allocation = await trustdropContract.allocation(
-        accountAddress
-      );
+      const allocation = await trustdropContract.allocation(accountAddress);
       setAllocatedTokens(truncateAmount(allocation));
     } catch (err) {
       console.log('check err setAllocatedTokens -  ', err);
     }
 
     try {
-      let mandBalance = await provider.getBalance(
-        accountAddress
-      );
+      let mandBalance = await provider.getBalance(accountAddress);
       setMandBalance(truncateAmount(mandBalance));
     } catch (err) {
       console.log('check err setMandBalance -  ', err);
@@ -404,47 +425,49 @@ function Dashboard() {
 
   useEffect(() => {
     if (trustdropContract) {
-      let feedData;
-      trustdropContract.on("Staked", (staker, candidate, amount, cred, timestamp) => {
-        feedData = {
-          type: "Staked",
-          staker,
-          amount,
-          timestamp
-        };
-        setLiveFeedData(prevState => [feedData, ...prevState]);
+      // let feedData;
+      trustdropContract.on(
+        'Staked',
+        (staker, candidate, amount, cred, timestamp) => {
+          // feedData = {
+          //   type: 'Staked',
+          //   staker,
+          //   amount,
+          //   timestamp,
+          // };
+          // setLiveFeedData((prevState) => [feedData, ...prevState]);
 
-        if (staker == accountAddress) {
-          const stakesData = {
-            address: candidate,
-            stake: parseFloat(
-              ethers.utils.formatUnits(amount)
-            ).toFixed(2),
-            credibility: parseFloat(cred).toFixed(2),
-          };
-          setStakesData(prevState => [stakesData, ...prevState]);
-        }
+          if (staker == accountAddress) {
+            const stakesData = {
+              address: candidate,
+              stake: parseFloat(ethers.utils.formatUnits(amount)).toFixed(2),
+              credibility: parseFloat(cred).toFixed(2),
+            };
+            setStakesData((prevState) => [stakesData, ...prevState]);
+          }
 
-        if (candidate == accountAddress) {
-          const receivedData = {
-            address: staker,
-            received: parseFloat(
-              ethers.utils.formatUnits(amount)
-            ).toFixed(2),
-            credibilityGained: parseFloat(cred).toFixed(2),
-          };
-          setReceivedData(prevState => [receivedData, ...prevState]);
+          if (candidate == accountAddress) {
+            const receivedData = {
+              address: staker,
+              received: parseFloat(ethers.utils.formatUnits(amount)).toFixed(2),
+              credibilityGained: parseFloat(cred).toFixed(2),
+            };
+            setReceivedData((prevState) => [receivedData, ...prevState]);
+          }
         }
-      });
-      trustdropContract.on("Unstaked", (staker, candidate, amount, cred, timestamp) => {
-        feedData = {
-          type: "Unstaked",
-          staker,
-          amount,
-          timestamp
-        };
-        setLiveFeedData(prevState => [feedData, ...prevState]);
-      });
+      );
+      // trustdropContract.on(
+      //   'Unstaked',
+      //   (staker, candidate, amount, cred, timestamp) => {
+      //     feedData = {
+      //       type: 'Unstaked',
+      //       staker,
+      //       amount,
+      //       timestamp,
+      //     };
+      //     setLiveFeedData((prevState) => [feedData, ...prevState]);
+      //   }
+      // );
     }
   }, [trustdropContract]);
 
@@ -467,12 +490,16 @@ function Dashboard() {
             </div>
           </div>
           <div className='main-container  flex flex-col md:flex-row justify-between gap-4 mt-4 w-[90%]'>
-            <div className='credibility-staking-container  bg-[rgba(112,113,232,0.03)] border-2  border-[#7071E8] p-4 md:p-5 shadow-md w-[30%] mb-4 md:mb-0 '>
+            <div className='credibility-staking-container  bg-[rgba(112,113,232,0.03)] border-2  border-[#7071E8] p-4 md:p-5 shadow-md w-[40%] mb-4 md:mb-0 '>
               <h1 className='text-2xl font-bold mb-4  text-[#7071E8] uppercase'>
                 Stake on Trust
               </h1>
               <p className='text-sm mb-4'>
-              Boost your credibility score and earn more rewards! Ask friends to stake their $MAND tokens on your address. The more stake you get, the better your credibility score. Use this interface below to Stake on your friends and help them earn more credibility score too!
+                Boost your credibility score and earn more rewards! Ask friends
+                to stake their $MAND tokens on your address. The more stake you
+                get, the better your credibility score. Use this interface below
+                to Stake on your friends and help them earn more credibility
+                score too!
               </p>
 
               <div className='flex  mb-4'>
@@ -527,8 +554,10 @@ function Dashboard() {
                       onClick={handleStake}
                       className='flex justify-center items-center w-full bg-[#7071E8] p-3 rounded text-white hover:bg-[#7071E8] transition-colors'
                     >
-                      {!loadingStakeTx && "Stake"}
-                      {loadingStakeTx && <ClipLoader color={"white"} size={24} />}
+                      {!loadingStakeTx && 'Stake'}
+                      {loadingStakeTx && (
+                        <ClipLoader color={'white'} size={24} />
+                      )}
                     </button>
                   </>
                 ) : (
@@ -557,8 +586,10 @@ function Dashboard() {
                       onClick={handleUnstake}
                       className='flex justify-center items-center w-full text-white bg-red-500 p-3 rounded hover:bg-red-700 transition-colors'
                     >
-                      {!loadingUnstakeTx && "Unstake"}
-                      {loadingUnstakeTx && <ClipLoader color={"white"} size={24} />}
+                      {!loadingUnstakeTx && 'Unstake'}
+                      {loadingUnstakeTx && (
+                        <ClipLoader color={'white'} size={24} />
+                      )}
                     </button>
                   </>
                 )}
@@ -605,7 +636,9 @@ function Dashboard() {
                         </>
                       ) : (
                         <>
-                          <th className='pb-2  text-left text-[#7071E8]'>Address</th>
+                          <th className='pb-2  text-left text-[#7071E8]'>
+                            Address
+                          </th>
                           <th className='pb-2  text-left   text-[#7071E8]'>
                             Stakes <br></br>received
                           </th>
@@ -617,7 +650,7 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                  {(activeTab === 'Your Stakes'
+                    {(activeTab === 'Your Stakes'
                       ? stakesData
                       : receivedData
                     ).map((data, index) => (
@@ -643,8 +676,13 @@ function Dashboard() {
                     ))}
                     {(activeTab === 'Your Stakes'
                       ? stakesData.length
-                      : receivedData.length
-                    ) === 0 && <tr className='flex justify-center items-center pt-2'><td className='flex justify-center items-center'>No Data</td></tr>}
+                      : receivedData.length) === 0 && (
+                      <tr className='flex justify-center items-center pt-2'>
+                        <td className='flex justify-center items-center'>
+                          No Data
+                        </td>
+                      </tr>
+                    )}
                     {/* <tr className='border-b w-4   text-md'>
                       <td className='py-2 flex items-center  gap-2 '>
                         0xualfkkjafkkafakljadkjf3
@@ -697,7 +735,7 @@ function Dashboard() {
                 </table>
               </div>
             </div>
-            <div className='main-container-cr w-[70%] max-h-full flex flex-col gap-4 '>
+            <div className='main-container-cr w-[60%] max-h-full flex flex-col gap-4 '>
               <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4  '>
                 {/* <div className='claimreward-item-container p-2 w-full flex  items-center justify-start gap-4  '>
               <div className='left-container text-xl bg-white  flex  gap-4  p-2 font-bold border-2 border-[#7071E8]'>
@@ -751,15 +789,21 @@ function Dashboard() {
                           <img src={LockedMand}></img>
                           <div className='text-xl'>{allocatedTokens}</div>
                         </div>
-                        <button className='flex justify-center items-center w-[50%] claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8]' onClick={handleClaim}>
-                          {!loadingClaimTx && "Claim"}
-                          {loadingClaimTx && <ClipLoader color={"white"} size={24} />}
+                        <button
+                          className='flex justify-center items-center w-[50%] claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8]'
+                          onClick={handleClaim}
+                        >
+                          {!loadingClaimTx && 'Claim'}
+                          {loadingClaimTx && (
+                            <ClipLoader color={'white'} size={24} />
+                          )}
                         </button>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
                         <div className='text-[10px] font-semibold text-center '>
-                          Rewards are distributed every Saturday 12PM CT (Central time)
+                          Rewards are distributed every Saturday 12PM CT
+                          (Central time)
                         </div>
                       </div>
                     </div>{' '}
@@ -845,7 +889,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className='livefeed bg-credibility-staking-livefeed w-full h-[30%]  max-h-[200px] p-2 flex flex-col  gap-4 '>
+              {/* <div className='livefeed bg-credibility-staking-livefeed w-full h-[30%]  max-h-[200px] p-2 flex flex-col  gap-4 '>
                 <div className='heading-container  font-bold text-black'>
                   Staking activity
                 </div>
@@ -854,20 +898,18 @@ function Dashboard() {
                     return <LiveFeedCard data={feedData} key={idx}/>
                   })}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
-        {openModal && (
-          <LeaderBoardModal closeModal={closeModal} />
-        )}
+        {openModal && <LeaderBoardModal closeModal={closeModal} />}
       </div>
-      <ToastContainer 
-        position="bottom-right"
+      <ToastContainer
+        position='bottom-right'
         autoClose={5000}
         hideProgressBar={true}
         rtl={false}
-        theme="light"
+        theme='light'
       />
     </motion.main>
   );
