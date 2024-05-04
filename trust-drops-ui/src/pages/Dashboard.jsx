@@ -391,34 +391,6 @@ function Dashboard() {
     }
   }, [trustdropContract, accountAddress]);
 
-  useEffect(() => {
-    if (trustdropContract) {
-      // let feedData;
-      trustdropContract.on(
-        'Staked',
-        (staker, candidate, amount, cred, timestamp) => {
-          if (staker == accountAddress) {
-            const stakesData = {
-              address: candidate,
-              stake: parseFloat(ethers.utils.formatUnits(amount)).toFixed(2),
-              credibility: parseFloat(cred).toFixed(2),
-            };
-            setStakesData((prevState) => [stakesData, ...prevState]);
-          }
-
-          if (candidate == accountAddress) {
-            const receivedData = {
-              address: staker,
-              received: parseFloat(ethers.utils.formatUnits(amount)).toFixed(2),
-              credibilityGained: parseFloat(cred).toFixed(2),
-            };
-            setReceivedData((prevState) => [receivedData, ...prevState]);
-          }
-        }
-      );
-    }
-  }, [trustdropContract]);
-
   return (
     <motion.main
       initial={{ y: -5, opacity: 0 }}
