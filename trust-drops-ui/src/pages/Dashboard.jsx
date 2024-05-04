@@ -55,7 +55,6 @@ function Dashboard() {
   const [stakesData, setStakesData] = useState([]);
   const [receivedData, setReceivedData] = useState([]);
   const [mandBalance, setMandBalance] = useState(0);
-  const [liveFeedData, setLiveFeedData] = useState([]);
   const [userRank, setUserRank] = useState(0);
 
   const [stakeForAddress, setStakeForAddress] = useState('');
@@ -358,37 +357,6 @@ function Dashboard() {
       console.log('check err receivedData -  ', err);
     }
 
-    // try {
-    //   const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //   const currentBlock = await provider.getBlockNumber();
-    //   let allStakesEvents = await trustdropContract.queryFilter(
-    //     trustdropContract.filters.Staked(),
-    //     currentBlock - 10000,
-    //     currentBlock
-    //   );
-    //   let allUnstakesEvents = await trustdropContract.queryFilter(
-    //     trustdropContract.filters.Unstaked(),
-    //     currentBlock - 10000,
-    //     currentBlock
-    //   );
-    //   let allEvents = [...allStakesEvents, ...allUnstakesEvents]; // concatenate arrays using spread operator
-    //   allEvents.sort(
-    //     (a, b) =>
-    //       parseFloat(`${a.blockNumber}.${a.transactionIndex}`) -
-    //       parseFloat(`${b.blockNumber}.${b.transactionIndex}`)
-    //   );
-    //   const combinedLogData = allEvents.toReversed().map((parsedLog) => {
-    //     return {
-    //       type: parsedLog.event,
-    //       staker: parsedLog.args.staker,
-    //       amount: parsedLog.args.amount.toString(),
-    //       timestamp: parsedLog.args.timestamp.toString(),
-    //     };
-    //   });
-    //   setLiveFeedData(combinedLogData);
-    // } catch (err) {
-    //   console.log('check err combined data -  ', err);
-    // }
     let credScore;
     try {
       const stakedTokens = await trustdropContract.totalStakedByUser(
@@ -429,14 +397,6 @@ function Dashboard() {
       trustdropContract.on(
         'Staked',
         (staker, candidate, amount, cred, timestamp) => {
-          // feedData = {
-          //   type: 'Staked',
-          //   staker,
-          //   amount,
-          //   timestamp,
-          // };
-          // setLiveFeedData((prevState) => [feedData, ...prevState]);
-
           if (staker == accountAddress) {
             const stakesData = {
               address: candidate,
@@ -456,18 +416,6 @@ function Dashboard() {
           }
         }
       );
-      // trustdropContract.on(
-      //   'Unstaked',
-      //   (staker, candidate, amount, cred, timestamp) => {
-      //     feedData = {
-      //       type: 'Unstaked',
-      //       staker,
-      //       amount,
-      //       timestamp,
-      //     };
-      //     setLiveFeedData((prevState) => [feedData, ...prevState]);
-      //   }
-      // );
     }
   }, [trustdropContract]);
 
@@ -889,16 +837,6 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              {/* <div className='livefeed bg-credibility-staking-livefeed w-full h-[30%]  max-h-[200px] p-2 flex flex-col  gap-4 '>
-                <div className='heading-container  font-bold text-black'>
-                  Staking activity
-                </div>
-                <div className='livefeed-container overflow-x-scroll h-full flex gap-4 items-center w-full no-scrollbar'>
-                  {liveFeedData.length > 0 && liveFeedData.map((feedData, idx) => {
-                    return <LiveFeedCard data={feedData} key={idx}/>
-                  })}
-                </div>
-              </div> */}
             </div>
           </div>
         </div>
