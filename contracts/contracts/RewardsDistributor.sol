@@ -36,4 +36,6 @@ contract RewardsDistributor is Ownable {
         (bool sent, ) = (msg.sender).call{value: reward}("");
         require(sent, "RewardsDistributor::Failed to send Ether");
     }
+
+    receive() external payable {}
 }

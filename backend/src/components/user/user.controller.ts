@@ -50,7 +50,7 @@ const linkUserTwitter = async (req: Request, res: Response) => {
     let { code, address, signature } = req.body;
     address = address.toLowerCase();
     const dbUser = await read(address);
-    if (dbUser && !dbUser.approved) {
+    if (dbUser && dbUser.approved) {
       res.status(httpStatus.BAD_REQUEST).send({ message: 'Wallet already approved' });
       return;
     }
