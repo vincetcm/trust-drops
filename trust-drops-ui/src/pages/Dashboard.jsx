@@ -722,7 +722,7 @@ function Dashboard() {
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
                         <div className='text-[10px] font-semibold text-center '>
-                          Rewards are distributed every Saturday 12PM CT
+                          Rewards are distributed every Monday 12PM CT
                           (Central time)
                         </div>
                       </div>
