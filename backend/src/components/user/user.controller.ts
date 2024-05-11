@@ -85,8 +85,8 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter account must have atleast 25 followers!' });
       return;
     }
-    await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
-    console.log('followed mande twitter');
+    // await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
+    // console.log('followed mande twitter');
     const user = {
       address,
       signature,
