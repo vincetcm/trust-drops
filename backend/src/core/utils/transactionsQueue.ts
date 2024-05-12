@@ -42,7 +42,7 @@ class TransactionsQueue {
 
     this.channel.consume(
       'approvalQueue',
-      async function (payload) {
+      function (payload) {
         if (payload != null) {
           let user: IUser = JSON.parse(payload.content.toString());
           console.log('===== Receive =====');
@@ -76,36 +76,36 @@ class TransactionsQueue {
             config.adminKey,
           );
           try {
-            const gas = await trustDropsContract.methods
+            const methodCall = trustDropsContract.methods
               .approve(
                 user.address,
                 web3.utils.keccak256(user.twitterId),
               )
-              .estimateGas({ from: adminAddress.address });
-            const encoded = trustDropsContract.methods
-              .approve(user.address, web3.utils.keccak256(user.twitterId))
-              .encodeABI();
-            const tx = {
-              gas: gas,
-              gasPrice: 50000000000,
-              to: config.trustdropsContractAddress,
-              data: encoded,
-              from: adminAddress.address,
-            };
-            console.log(tx);
-            const signed = await web3.eth.accounts.signTransaction(
-              tx,
-              config.adminKey,
-            );
-            await web3.eth
-              .sendSignedTransaction(signed.rawTransaction)
-              .on('receipt', async (receipt) => {
-                console.log('Approval receipt - ', receipt);
-                update(user, {approved: true} as IUpdateUser);
-              })
-              .on('error', async (err) => {
-                console.log('Approval failure - ', err);
+            const encoded = methodCall.encodeABI();
+            methodCall.estimateGas({ from: adminAddress.address }).then(gas => {
+              const tx = {
+                gas: gas,
+                gasPrice: 50000000000,
+                to: config.trustdropsContractAddress,
+                data: encoded,
+                from: adminAddress.address,
+              };
+              console.log(tx);
+              web3.eth.accounts.signTransaction(
+                tx,
+                config.adminKey,
+              ).then(signed => {
+                web3.eth
+                  .sendSignedTransaction(signed.rawTransaction)
+                  .on('receipt', (receipt) => {
+                    console.log('Approval receipt - ', receipt);
+                    update(user, {approved: true} as IUpdateUser);
+                  })
+                  .on('error', (err) => {
+                    console.log('Approval failure - ', err);
+                  });
               });
+            });
           } catch(error) {
             console.log("errored for user - ", user, error);
           }
