@@ -17,6 +17,7 @@ class TransactionsQueue {
     try {
         this.connection = await amqp.connect(config.rabbitMqUrl);
         this.channel = await this.connection.createChannel();
+        this.channel.prefetch(1)
         await this.channel.assertQueue("approvalQueue");
     } catch (error) {
         console.log(error)
