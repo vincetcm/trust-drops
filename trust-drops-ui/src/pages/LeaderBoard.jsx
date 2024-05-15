@@ -209,6 +209,10 @@ function LeaderBoard() {
               <ul className='list-disc ml-5'>
                 <li>Top 100-1000: 100 $MAND each</li>
                 <li>Top 1000-5000: 20 $MAND each</li>
+                <li>Top 5000-10000: 10 $MAND each</li>
+              </ul>
+              <ul className='list-disc ml-5'>
+                <li>Top 3000 by "credibility given": 10 $MAND each</li>
               </ul>
             </div>
           </div>
