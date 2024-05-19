@@ -62,7 +62,7 @@ function Dashboard() {
       refetchIntervalInBackground: true
     }, { 
       abi: trustdropABI.abi,
-      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      address: process.env.REACT_APP_REWARD_DISTRIBUTOR_CONTRACT_ADDRESS,
       functionName: 'allocation',
       args: [account.address],
       refetchInterval: 10000,
