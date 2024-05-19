@@ -78,7 +78,7 @@ function Navbar() {
               fontSize: 18
             }}
           >
-            <ConnectButton />
+            <ConnectButton showBalance={false}/>
           </div>
         </div>
       </div>
