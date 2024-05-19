@@ -1,37 +1,20 @@
-import React, { useState, useEffect, useContext } from 'react';
-import LeaderBoardModal from '../components/LeaderBoardModal';
-import Navbar from '../components/Navbar';
+import React, { useState, useEffect } from 'react';
 import { PiCopySimpleBold } from 'react-icons/pi';
-import { MdOutlineLeaderboard, MdOutlineVerifiedUser } from 'react-icons/md';
-import { FaRegUserCircle, FaRegDotCircle } from 'react-icons/fa';
-import { IoLockClosedOutline } from 'react-icons/io5';
-import { TbUserUp } from 'react-icons/tb';
-import { FaRegSmileWink } from 'react-icons/fa';
-import { RiLiveLine } from 'react-icons/ri';
 import { ethers } from 'ethers';
-import trustdropABI from '../abis/trustdropABI.json';
 import { createClient, cacheExchange, fetchExchange } from 'urql';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
-
-import {
-  LockClosedIcon,
-  LockOpenIcon,
-  EyeIcon,
-} from '@heroicons/react/outline';
-
-import { DataContext } from '../context/DataContext';
 import RankIcon from '../assets/rankIcon.svg';
-import CredibilityScoreIcon from '../assets/credibilityScoreIcon.svg';
-import MandeLogo from '../assets/mandeLogo.svg';
 import AvailableMandeIcon from '../assets/availableMandIcon.svg';
 import LockedMand from '../assets/lockedMandIcon.svg';
-import UnlockedMand from '../assets/unlockedMandIcon.svg';
 import infoIcon from '../assets/infoIcon.svg';
 import { motion } from 'framer-motion';
 import { gql } from '@urql/core';
+import { useAccount, useWriteContract, useReadContracts, useBalance } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import trustdropABI from '../abis/trustdropABI.json';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -45,16 +28,11 @@ moment.updateLocale('en', {
 });
 
 function Dashboard() {
-  const [openModal, setOpenModal] = useState(false);
   const [isStaking, setIsStaking] = useState(true);
   const [activeTab, setActiveTab] = useState('Your Stakes');
 
-  const [stakedBalance, setStakedBalance] = useState(0);
-  const [credScore, setCredScore] = useState(0);
-  const [allocatedTokens, setAllocatedTokens] = useState(0);
   const [stakesData, setStakesData] = useState([]);
   const [receivedData, setReceivedData] = useState([]);
-  const [mandBalance, setMandBalance] = useState(0);
   const [userRank, setUserRank] = useState(0);
 
   const [stakeForAddress, setStakeForAddress] = useState('');
@@ -63,34 +41,98 @@ function Dashboard() {
   const [loadingStakeTx, setLoadingStakeTx] = useState(false);
   const [loadingUnstakeTx, setLoadingUnstakeTx] = useState(false);
   const [loadingClaimTx, setLoadingClaimTx] = useState(false);
+  const account = useAccount();
 
-  const { accountAddress, trustdropContract, provider, connectWallet, rewardContract } =
-    useContext(DataContext);
+  const { 
+    data
+  } = useReadContracts({ 
+    contracts: [{ 
+      abi: trustdropABI.abi,
+      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      functionName: 'totalStakedByUser',
+      args: [account.address],
+      refetchInterval: 10000,
+      refetchIntervalInBackground: true
+    }, { 
+      abi: trustdropABI.abi,
+      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      functionName: 'reputation',
+      args: [account.address],
+      refetchInterval: 10000,
+      refetchIntervalInBackground: true
+    }, { 
+      abi: trustdropABI.abi,
+      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      functionName: 'allocation',
+      args: [account.address],
+      refetchInterval: 10000,
+      refetchIntervalInBackground: true
+    }]
+  }) 
+  const [stakedBalance, credScore, allocatedTokens] = data || [];
+  const { data: mandBalance } = useBalance({
+    address: account?.address,
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
+  });
 
-  console.log('accountAddress', accountAddress);
+  const { 
+    data: stakeTxHash,
+    error: stakeTxError, 
+    writeContract: writeStakeTx
+  } = useWriteContract();
 
-  // const stakesData = [
-  //   {
-  //     address: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-  //     stake: '100.00 $DAO',
-  //     credibility: '10.00',
-  //   },
-  //   {
-  //     address: '0xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe20xadfe2',
-  //     stake: '400.00 $DAO',
-  //     credibility: '40.00',
-  //   },
-  //   { address: '0xadfe2...f15d2', stake: '25.00 $DAO', credibility: '5.00' },
-  //   { address: '0xadfe2...f135d', stake: '16.00 $DAO', credibility: '4.00' },
-  // ];
+  const { 
+    data: unstakeTxHash,
+    error: unstakeTxError, 
+    writeContract: writeUnstakeTx
+  } = useWriteContract();
 
-  // const receivedData = [
-  //   {
-  //     address: '0xadfe2...f15d4',
-  //     received: '120.00 $DAO',
-  //     credibilityGained: '15.00',
-  //   },
-  // ];
+  const { 
+    data: claimTxHash,
+    error: claimTxError, 
+    writeContract: writeClaimTx
+  } = useWriteContract();
+
+  useEffect(() => {
+    if (stakeTxHash) {
+      toast.success('Stake successfull');
+      setLoadingStakeTx(false);
+    }
+
+    if (stakeTxError) {
+      toast.error(stakeTxError);
+      setLoadingStakeTx(false);
+    }
+  }, [stakeTxHash, stakeTxError]);
+
+  useEffect(() => {
+    if (unstakeTxHash) {
+      toast.success('Unstake successfull');
+      setLoadingUnstakeTx(false);
+    }
+
+    if (unstakeTxError) {
+      toast.error(unstakeTxError);
+      setLoadingUnstakeTx(false);
+    }
+  }, [unstakeTxHash, unstakeTxError]);
+
+  useEffect(() => {
+    console.log("claim det");
+    console.log(claimTxHash)
+    console.log(claimTxError)
+    if (claimTxHash) {
+      toast.success('Claim successfull');
+      setLoadingClaimTx(false);
+    }
+
+    if (claimTxError) {
+      toast.error("Claim failed");
+      setLoadingClaimTx(false);
+    }
+  }, [claimTxHash, claimTxError]);
+
   const formatAddress = (address) => {
     const maxLength = 18;
     return address.length > maxLength
@@ -112,9 +154,11 @@ function Dashboard() {
   };
 
   const handleStake = async () => {
-    if (!accountAddress) {
-      await connectWallet();
+    if (!account?.address) {
+      toast.error('Please connect wallet');
+      return;
     }
+    
     if (!ethers.utils.isAddress(stakeForAddress)) {
       toast.error('Please enter valid address');
       return;
@@ -124,38 +168,21 @@ function Dashboard() {
       return;
     }
     setLoadingStakeTx(true);
-    try {
-      // const estimation = await trustdropContract.estimateGas.stake(
-      //   stakeForAddress,
-      //   {value: ethers.utils.parseUnits(stakeAmount)}
-      // );
-      console.log('check contract - ', trustdropContract);
-      const stakeTx = await trustdropContract.stake(stakeForAddress, {
-        value: ethers.utils.parseUnits(stakeAmount),
-        // gasPrice: estimation,
-      });
-      await stakeTx.wait();
-
-      console.log('Stake transaction hash', stakeTx.hash);
-      console.log('Stake function executed');
-      toast.success('Stake successfull');
-      setLoadingStakeTx(false);
-    } catch (e) {
-      console.log(e);
-      if (e && e.data && e.data.message) {
-        toast.error(e.data.message);
-      } else {
-        const err = JSON.stringify(e);
-        toast.error(JSON.parse(err).reason);
-      }
-      setLoadingStakeTx(false);
-    }
+    writeStakeTx({
+      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      abi: trustdropABI.abi,
+      functionName: 'stake',
+      args: [stakeForAddress],
+      value: ethers.utils.parseUnits(stakeAmount)
+    })
   };
 
   const handleUnstake = async () => {
-    if (!accountAddress) {
-      await connectWallet();
+    if (!account?.address) {
+      toast.error('Please connect wallet');
+      return;
     }
+
     if (!ethers.utils.isAddress(stakeForAddress)) {
       toast.error('Please enter valid address');
       return;
@@ -165,123 +192,41 @@ function Dashboard() {
       return;
     }
     setLoadingUnstakeTx(true);
-    console.log(stakeForAddress, ethers.utils.parseUnits(stakeAmount));
-    // const estimation = await trustdropContract.estimateGas.unstake(
-    //   stakeForAddress,
-    //   ethers.utils.parseUnits(stakeAmount)
-    // );
-    try {
-      const unstakeTx = await trustdropContract.unstake(
-        stakeForAddress,
-        ethers.utils.parseUnits(stakeAmount)
-        // {
-        //   gasPrice: estimation,
-        // }
-      );
-      await unstakeTx.wait();
-
-      console.log('Stake transaction hash', unstakeTx.hash);
-      console.log('Unstake function executed');
-      toast.success('Unstake successfull');
-      setLoadingUnstakeTx(false);
-    } catch (e) {
-      console.log(e);
-      if (e && e.data && e.data.message) {
-        toast.error(e.data.message);
-      } else {
-        const err = JSON.stringify(e);
-        toast.error(JSON.parse(err).reason);
-      }
-      setLoadingUnstakeTx(false);
-    }
-  };
-
-  const LiveFeedCard = (props) => {
-    return (
-      <div
-        className='live-feed-container h-[60px]   min-w-[280px] max-w-[30%]
-     flex rounded-full   items-center mb-4  bg-white gap-2 px-2 '
-      >
-        {props.data.type == 'Staked' && (
-          <img src={LockedMand} className='icon-container h-10 w-10' />
-        )}
-        {props.data.type == 'Unstaked' && (
-          <img src={UnlockedMand} className='icon-container h-10 w-10' />
-        )}
-        <div className='data-container  flex flex-col  flex-1'>
-          <div className='top-container flex text-black gap-2 items-center justify-between pr-2 '>
-            <div className='left-container'>
-              <div className='fromAddress text-[16px]  font-semibold text-black'>
-                {formatAddress(props.data.staker)}
-              </div>{' '}
-            </div>
-            <div className='icon-super-container  items-center gap-2'>
-              <div className='icon-container flex items-center gap-2'>
-                <img src={MandeLogo} className='icon-container h-6' />
-                <span className='font-bold'>
-                  {parseFloat(
-                    ethers.utils.formatUnits(props.data.amount)
-                  ).toFixed(2)}
-                </span>
-              </div>
-              <div className='time text-[14px]  text-slate-500'>
-                {moment(
-                  parseInt(props.data.timestamp.toString()) * 1000
-                ).fromNow()}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    writeUnstakeTx({
+      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      abi: trustdropABI.abi,
+      functionName: 'unstake',
+      args: [stakeForAddress, ethers.utils.parseUnits(stakeAmount)],
+    });
   };
 
   const handleClaim = async () => {
-    if (!accountAddress) {
-      await connectWallet();
+    if (!account?.address) {
+      toast.error('Please connect wallet');
+      return;
     }
-    if (allocatedTokens == 0) {
+    if (allocatedTokens?.result == 0) {
       toast.error('No rewards to claim');
       return;
     }
     console.log('Claim function executed');
     setLoadingClaimTx(true);
-    // const estimation = await trustdropContract.estimateGas.claimTokens();
-    try {
-      const claimTx = await rewardContract.claimTokens();
-
-      await claimTx.wait();
-      console.log('Claim transaction hash', claimTx.hash);
-      toast.success('Claim successfull');
-      setLoadingClaimTx(false);
-      setAllocatedTokens(0.0);
-    } catch (e) {
-      setLoadingClaimTx(false);
-      if (e && e.data && e.data.message) {
-        toast.error(e.data.message);
-      } else {
-        const err = JSON.stringify(e);
-        toast.error(JSON.parse(err).reason);
-      }
-      console.log('claim failed');
-    }
+    writeClaimTx({
+      address: process.env.REACT_APP_REWARD_DISTRIBUTOR_CONTRACT_ADDRESS,
+      abi: trustdropABI.abi,
+      functionName: 'claimTokens',
+    });
   };
 
   const handleTabSwitch = (tabName) => {
     setActiveTab(tabName);
-  };
-  const openLeaderBoard = () => {
-    setOpenModal(true);
-  };
-  const closeModal = () => {
-    setOpenModal(false);
   };
 
   async function loadUserData() {
     console.log('loading user data');
 
     try {
-      fetch(`${process.env.REACT_APP_API_URL}userRank/${accountAddress}`)
+      fetch(`${process.env.REACT_APP_API_URL}userRank/${account.address}`)
         .then((response) => response.json())
         .then((data) => setUserRank(data.rank))
         .catch((err) => console.log(err));
@@ -308,7 +253,7 @@ function Dashboard() {
       });
 
       const data = await client
-        .query(stakesSentQuery, { address: accountAddress })
+        .query(stakesSentQuery, { address: account.address })
         .toPromise();
       const stakesData = data.data.stakes.toReversed().map((data) => {
         return {
@@ -341,7 +286,7 @@ function Dashboard() {
       });
 
       const data = await client
-        .query(stakesSentQuery, { address: accountAddress })
+        .query(stakesSentQuery, { address: account.address })
         .toPromise();
       const receivedData = data.data.stakes.toReversed().map((data) => {
         return {
@@ -356,40 +301,13 @@ function Dashboard() {
     } catch (err) {
       console.log('check err receivedData -  ', err);
     }
-
-    let credScore;
-    try {
-      const stakedTokens = await trustdropContract.totalStakedByUser(
-        accountAddress
-      );
-      setStakedBalance(truncateAmount(stakedTokens));
-
-      credScore = await trustdropContract.reputation(accountAddress);
-      setCredScore(credScore.toString());
-    } catch (err) {
-      console.log('stake and cred fetcing failed -  ', err);
-    }
-
-    try {
-      const allocation = await rewardContract.allocation(accountAddress);
-      setAllocatedTokens(truncateAmount(allocation));
-    } catch (err) {
-      console.log('check err setAllocatedTokens -  ', err);
-    }
-
-    try {
-      let mandBalance = await provider.getBalance(accountAddress);
-      setMandBalance(truncateAmount(mandBalance));
-    } catch (err) {
-      console.log('check err setMandBalance -  ', err);
-    }
   }
 
   useEffect(() => {
-    if (trustdropContract && accountAddress) {
+    if (account?.address) {
       loadUserData();
     }
-  }, [trustdropContract, accountAddress]);
+  }, [account?.address]);
 
   return (
     <motion.main
@@ -603,76 +521,12 @@ function Dashboard() {
                         </td>
                       </tr>
                     )}
-                    {/* <tr className='border-b w-4   text-md'>
-                      <td className='py-2 flex items-center  gap-2 '>
-                        0xualfkkjafkkafakljadkjf3
-                        <PiCopySimpleBold className='text-[#7071E8]' />
-                      </td>
-                      <td className='py-2 text-center justify-center'>
-                        10 $MAND
-                      </td>
-                      <td className='py-2 flex justify-center items-center gap-2'>
-                        100
-                      </td>
-                    </tr>{' '}
-                    <tr className='border-b w-4   text-md'>
-                      <td className='py-2 flex items-center  gap-2 '>
-                        0xualfkkjafkkafakljadkjf3
-                        <PiCopySimpleBold className='text-[#7071E8]' />
-                      </td>
-                      <td className='py-2 text-center justify-center'>
-                        10 $MAND
-                      </td>
-                      <td className='py-2 flex justify-center items-center gap-2'>
-                        100
-                      </td>
-                    </tr>{' '}
-                    <tr className='border-b w-4   text-md'>
-                      <td className='py-2 flex items-center  gap-2 '>
-                        0xualfkkjafkkafakljadkjf3
-                        <PiCopySimpleBold className='text-[#7071E8]' />
-                      </td>
-                      <td className='py-2 text-center justify-center'>
-                        10 $MAND
-                      </td>
-                      <td className='py-2 flex justify-center items-center gap-2'>
-                        100
-                      </td>
-                    </tr>{' '}
-                    <tr className='border-b w-4   text-md'>
-                      <td className='py-2 flex items-center  gap-2 '>
-                        0xualfkkjafkkafakljadkjf3
-                        <PiCopySimpleBold className='text-[#7071E8]' />
-                      </td>
-                      <td className='py-2 text-center justify-center'>
-                        10 $MAND
-                      </td>
-                      <td className='py-2 flex justify-center items-center gap-2'>
-                        100
-                      </td>
-                    </tr>{' '} */}
                   </tbody>
                 </table>
               </div>
             </div>
             <div className='main-container-cr w-[60%] max-h-full flex flex-col gap-4 '>
               <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4  '>
-                {/* <div className='claimreward-item-container p-2 w-full flex  items-center justify-start gap-4  '>
-              <div className='left-container text-xl bg-white  flex  gap-4  p-2 font-bold border-2 border-[#7071E8]'>
-                You have{' '}
-                <span className='text-bold text-[#7071E8]'>
-                  {parseFloat(allocatedTokens).toFixed(2)}
-                </span>
-                $DAO to be claimed
-              </div>
-              <button
-                className='right-container text-xl p-2 font-semibold text-white bg-[#7071E8]'
-                onClick={handleClaim}
-              >
-                Claim
-              </button>
-            </div> */}
-
                 <div className='top-data-container flex flex-col gap-2'>
                   <div className='top-container bg-black w-full flex justify-around py-4 '>
                     <div className='data-container flex-1  flex flex-col items-center  justify-center '>
@@ -688,14 +542,14 @@ function Dashboard() {
                       </div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={AvailableMandeIcon}></img>
-                        <div className='text'>{mandBalance}</div>
+                        <div className='text'>{mandBalance?.value ? truncateAmount(mandBalance.value) : 0}</div>
                       </div>
                     </div>{' '}
                     <div className='data-container flex flex-col items-center  justify-center flex-1 border-l-[1px] border-[#7071E8] '>
                       <div className='title text-[#7071E8]'>Locked $MAND</div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={LockedMand}></img>
-                        <div className='text'>{stakedBalance}</div>
+                        <div className='text'>{stakedBalance?.result ? truncateAmount(stakedBalance.result) : 0}</div>
                       </div>
                     </div>{' '}
                   </div>
@@ -707,7 +561,7 @@ function Dashboard() {
                       <div className='bottom-claim-container flex justify-between items-center w-full px-4 '>
                         <div className='data-value-container text-[24px] flex gap-[4px] '>
                           <img src={LockedMand}></img>
-                          <div className='text-xl'>{allocatedTokens}</div>
+                          <div className='text-xl'>{allocatedTokens?.result ? truncateAmount(allocatedTokens.result) : 0}</div>
                         </div>
                         <button
                           className='flex justify-center items-center w-[50%] claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8]'
@@ -734,7 +588,7 @@ function Dashboard() {
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
                         <img src={LockedMand}></img>
-                        <div className='text-2xl '>{credScore}</div>
+                        <div className='text-2xl '>{credScore?.result?.toString() || 0}</div>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
@@ -771,48 +625,12 @@ function Dashboard() {
                     4 different friends at $25 each you get 4*√25 = 20
                     credibilty points.
                     <br></br>
-                    {/* <span className='text-[#7071E8]  font-semibold text-xl'>
-                  To increase your credibility get more friends to support you
-                </span> */}
-                    {/* <div className='overflow-y-auto max-h-[300px] mt-4 border-2 p-2 border-[#7070e86d] '>
-                  <table className='w-full text-sm'>
-                    <thead>
-                      <tr className='border-b-2 border-[#7070e86d]  '>
-                        <th className='pb-2   text-[#7071E8]'>Address</th>
-                        <th className='pb-2  text-left   text-[#7071E8]'>
-                          Stakes <br></br>received
-                        </th>
-                        <th className='pb-2   text-[#7071E8]'>
-                          Credibility <br></br>gained
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {receivedData.map((data, index) => (
-                        <tr key={index} className='border-b w-4  text-md'>
-                          <td
-                            className='py-2 flex items-center gap-2 '
-                            onClick={() => copyToClipboard(data.address)}
-                          >
-                            {formatAddress(data.address)}
-                            <PiCopySimpleBold className='text-[#7071E8]' />
-                          </td>
-                          <td className='py-2 text-center'>{data.received}</td>
-                          <td className='py-2 text-center'>
-                            {data.credibilityGained}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div> */}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {openModal && <LeaderBoardModal closeModal={closeModal} />}
       </div>
       <ToastContainer
         position='bottom-right'

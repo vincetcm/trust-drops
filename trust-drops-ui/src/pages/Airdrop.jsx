@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AirdropImg from '../assets/airdropImage.svg';
-import AirdropImg2 from '../assets/airdropImage2.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DataContext } from '../context/DataContext';
 import { motion } from 'framer-motion';
 import ClipLoader from "react-spinners/ClipLoader";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useSignMessage, useAccount } from 'wagmi'
 
 function Airdrop() {
 
@@ -14,8 +14,10 @@ function Airdrop() {
   const [user, setUser] = useState(null);
   const [linkLoading, setLinkLoading] = useState(false);
   const { search } = useLocation();
-  const { connectWallet, signer, accountAddress } = useContext(DataContext);
   const navigate = useNavigate();
+  const { data: signMessageData, error: signMessageError, isLoading: signMessageIsLoading, signMessage } = useSignMessage();
+  const account = useAccount();
+
 
   useEffect(() => {
     console.log("search - ", search);
@@ -32,9 +34,9 @@ function Airdrop() {
   }, [search]);
 
   useEffect(() => {
-    if (accountAddress && accountAddress.length > 0) {
+    if (account.address && account.address.length > 0) {
       try {
-        fetch(`${process.env.REACT_APP_API_URL}user/${accountAddress}`)
+        fetch(`${process.env.REACT_APP_API_URL}user/${account.address}`)
           .then(response => response.json())
           .then(data => setUser(data.output))
           .catch(err => console.log(err));
@@ -44,7 +46,22 @@ function Airdrop() {
         console.log("could not fetch user details")
       }
     }
-  }, [accountAddress]);
+  }, [account.address]);
+
+  useEffect(() => {
+    (async () => {
+      if (signMessageData) {
+        linkWalletX();
+      }
+    })()
+  }, [signMessageData])
+
+  useEffect(() => {
+    if (signMessageError) {
+      toast.error("Error while signing message");
+      setLinkLoading(false);
+    }
+  }, [signMessageError])
 
   const twitterAuth = async () => {
     fetch(`${process.env.REACT_APP_API_URL}twitter-login`)
@@ -52,22 +69,26 @@ function Airdrop() {
       .then(data => window.open(data.url,"_self"));
   }
 
-  const linkWalletX = async () => {
+  const initLinkWalletX = async () => {
     setLinkLoading(true);
     if (!twitterAuthCode) {
       toast.error("Please connect twitter first");
       setLinkLoading(false);
       return;
     }
-    if (!accountAddress) {
+    if (!account.address) {
       toast.error("Please connect wallet first");
       setLinkLoading(false);
       return;
     }
 
+    signMessage({message: 'Trustdrops login'});
+  }
+
+  const linkWalletX = async () => {
     const payload = {
-      "address": await signer.getAddress(),
-      "signature": await signer.signMessage("Trustdrops login"),
+      "address": account.address,
+      "signature": signMessageData,
       "code": twitterAuthCode
     }
 
@@ -79,7 +100,7 @@ function Airdrop() {
       const resp =  await res.json();
       if (resp.message == "Linked") {
         setUser({approved: true});
-        toast("You received 30 MAND", {icon: "🚀"});
+        toast("You will receive 30 MAND soon", {icon: "🚀"});
       } else if (resp.message) {
         navigate("/airdrop", { replace: true });
         toast.error(resp.message);
@@ -132,10 +153,7 @@ function Airdrop() {
                   Connect your wallet
                 </div>
               </div>
-              <button className='button-container bg-black px-4 text-center py-2  w-[200px]' disabled={accountAddress && accountAddress.length>0} onClick={connectWallet}>
-                {user && user.approved ? "✔️" :
-                  accountAddress ? `${accountAddress.slice(0, 4)}....${accountAddress.slice(38, 42)}` : "Connect wallet"}
-              </button>
+              <div className='flex justify-center items-center bg-black font-mono w-[200px] hover:duraion-0'><ConnectButton showBalance={false}/></div>
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
@@ -147,7 +165,7 @@ function Airdrop() {
                   Link your wallet with twitter/X
                 </div>
               </div>
-              <button className='flex justify-center items-center button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={linkLoading || (user && user.approved)} onClick={linkWalletX}>
+              <button className='flex justify-center items-center button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={linkLoading || (user && user.approved)} onClick={initLinkWalletX}>
                 {!linkLoading && (user && user.approved ? "✔️" : "Link both")}
                 {linkLoading && <ClipLoader color={"white"} size={25} />}
               </button>
