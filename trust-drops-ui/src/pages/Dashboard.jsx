@@ -13,7 +13,7 @@ import infoIcon from '../assets/infoIcon.svg';
 import { motion } from 'framer-motion';
 import { gql } from '@urql/core';
 import { useAccount, useWriteContract, useReadContracts, useBalance } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useQueryClient } from '@tanstack/react-query' 
 import trustdropABI from '../abis/trustdropABI.json';
 
 moment.updateLocale('en', {
@@ -29,10 +29,8 @@ moment.updateLocale('en', {
 
 function Dashboard() {
   const [isStaking, setIsStaking] = useState(true);
-  const [activeTab, setActiveTab] = useState('Your Stakes');
 
-  const [stakesData, setStakesData] = useState([]);
-  const [receivedData, setReceivedData] = useState([]);
+  const [userStakesData, setUserStakesData] = useState({});
   const [userRank, setUserRank] = useState(0);
 
   const [stakeForAddress, setStakeForAddress] = useState('');
@@ -42,6 +40,7 @@ function Dashboard() {
   const [loadingUnstakeTx, setLoadingUnstakeTx] = useState(false);
   const [loadingClaimTx, setLoadingClaimTx] = useState(false);
   const account = useAccount();
+  const queryClient = useQueryClient();
 
   const { 
     data
@@ -51,29 +50,23 @@ function Dashboard() {
       address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
       functionName: 'totalStakedByUser',
       args: [account.address],
-      refetchInterval: 10000,
-      refetchIntervalInBackground: true
     }, { 
       abi: trustdropABI.abi,
       address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
       functionName: 'reputation',
       args: [account.address],
-      refetchInterval: 10000,
-      refetchIntervalInBackground: true
     }, { 
       abi: trustdropABI.abi,
       address: process.env.REACT_APP_REWARD_DISTRIBUTOR_CONTRACT_ADDRESS,
       functionName: 'allocation',
       args: [account.address],
-      refetchInterval: 10000,
-      refetchIntervalInBackground: true
-    }]
+    }],
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true
   }) 
   const [stakedBalance, credScore, allocatedTokens] = data || [];
-  const { data: mandBalance } = useBalance({
+  const { data: mandBalance, queryKey: balanceQueryKey } = useBalance({
     address: account?.address,
-    refetchInterval: 10000,
-    refetchIntervalInBackground: true,
   });
 
   const { 
@@ -98,6 +91,7 @@ function Dashboard() {
     if (stakeTxHash) {
       toast.success('Stake successfull');
       setLoadingStakeTx(false);
+      queryClient.invalidateQueries({ balanceQueryKey });
     }
 
     if (stakeTxError) {
@@ -110,6 +104,7 @@ function Dashboard() {
     if (unstakeTxHash) {
       toast.success('Unstake successfull');
       setLoadingUnstakeTx(false);
+      queryClient.invalidateQueries({ balanceQueryKey });
     }
 
     if (unstakeTxError) {
@@ -119,12 +114,10 @@ function Dashboard() {
   }, [unstakeTxHash, unstakeTxError]);
 
   useEffect(() => {
-    console.log("claim det");
-    console.log(claimTxHash)
-    console.log(claimTxError)
     if (claimTxHash) {
       toast.success('Claim successfull');
       setLoadingClaimTx(false);
+      queryClient.invalidateQueries({ balanceQueryKey });
     }
 
     if (claimTxError) {
@@ -209,7 +202,6 @@ function Dashboard() {
       toast.error('No rewards to claim');
       return;
     }
-    console.log('Claim function executed');
     setLoadingClaimTx(true);
     writeClaimTx({
       address: process.env.REACT_APP_REWARD_DISTRIBUTOR_CONTRACT_ADDRESS,
@@ -218,13 +210,7 @@ function Dashboard() {
     });
   };
 
-  const handleTabSwitch = (tabName) => {
-    setActiveTab(tabName);
-  };
-
   async function loadUserData() {
-    console.log('loading user data');
-
     try {
       fetch(`${process.env.REACT_APP_API_URL}userRank/${account.address}`)
         .then((response) => response.json())
@@ -234,10 +220,11 @@ function Dashboard() {
       console.log('could not fetch user details');
     }
 
+    let stakesData, receivedData;
     try {
       const stakesSentQuery = gql`
         query GetStakesSent($address: String!) {
-          stakes(where: { staker_: { id: $address } }) {
+          stakes(first:1000, where: { staker_: { id: $address } }) {
             amount
             credScore
             candidate {
@@ -255,14 +242,13 @@ function Dashboard() {
       const data = await client
         .query(stakesSentQuery, { address: account.address })
         .toPromise();
-      const stakesData = data.data.stakes.toReversed().map((data) => {
+      stakesData = data.data.stakes.toReversed().map((data) => {
         return {
           address: data.candidate.id,
           stake: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(2),
           credibility: parseFloat(data.credScore).toFixed(2),
         };
       });
-      setStakesData(stakesData);
     } catch (err) {
       console.log('check err stakesData -  ', err);
     }
@@ -270,7 +256,7 @@ function Dashboard() {
     try {
       const stakesSentQuery = gql`
         query GetStakesSent($address: String!) {
-          stakes(where: { candidate_: { id: $address } }) {
+          stakes(first:1000, where: { candidate_: { id: $address } }) {
             amount
             credScore
             staker {
@@ -288,7 +274,7 @@ function Dashboard() {
       const data = await client
         .query(stakesSentQuery, { address: account.address })
         .toPromise();
-      const receivedData = data.data.stakes.toReversed().map((data) => {
+      receivedData = data.data.stakes.toReversed().map((data) => {
         return {
           address: data.staker.id,
           received: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(
@@ -297,10 +283,27 @@ function Dashboard() {
           credibilityGained: parseFloat(data.credScore).toFixed(2),
         };
       });
-      setReceivedData(receivedData);
     } catch (err) {
       console.log('check err receivedData -  ', err);
     }
+
+    let finalStakesData = {};
+    stakesData.concat(receivedData).map(el => {
+      if (!finalStakesData[el.address]) finalStakesData[el.address] = {address: el.address};
+      
+      if (el.credibility) {
+        finalStakesData[el.address].stake = el.stake;
+        finalStakesData[el.address].credibility = el.credibility;
+      } 
+      if (el.credibilityGained) {
+        finalStakesData[el.address].received = el.received;
+        finalStakesData[el.address].credibilityGained = el.credibilityGained;
+      }
+    });
+
+    console.log("finalStakesData - ", typeof(finalStakesData))
+
+    setUserStakesData(finalStakesData);
   }
 
   useEffect(() => {
@@ -432,101 +435,9 @@ function Dashboard() {
                   </>
                 )}
               </div>
-
-              <div className='flex justify-between mt-5 mb-2'>
-                <button
-                  onClick={() => handleTabSwitch('Your Stakes')}
-                  className={`text-center  flex-1 bg-[#7071E8]  p-2 rounded ${
-                    activeTab === 'Your Stakes'
-                      ? 'text-white'
-                      : 'bg-white border-2 text-[#7071E8] border-[#7071E8]'
-                  }`}
-                >
-                  Your Stakes
-                </button>
-                <button
-                  onClick={() => handleTabSwitch('Stakes Received')}
-                  className={`text-center   flex-1 bg-[#7071E8]  p-2 rounded ml-2 ${
-                    activeTab === 'Stakes Received'
-                      ? 'text-white'
-                      : 'bg-white border-2 text-[#7071E8] border-[#7071E8] '
-                  }`}
-                >
-                  Stakes Received
-                </button>
-              </div>
-
-              <div className='overflow-y-auto max-h-[300px] mt-4 border-2 p-2 border-[#7070e86d] '>
-                <table className='w-full text-sm'>
-                  <thead>
-                    <tr className='border-b-2 border-[#7070e86d]  '>
-                      {activeTab === 'Your Stakes' ? (
-                        <>
-                          <th className='pb-2 text-left  text-[#7071E8]'>
-                            Address
-                          </th>
-                          <th className='pb-2 text-left   text-[#7071E8]'>
-                            Your stake
-                          </th>
-                          <th className='pb-2   text-[#7071E8]'>
-                            Credibility given
-                          </th>
-                        </>
-                      ) : (
-                        <>
-                          <th className='pb-2  text-left text-[#7071E8]'>
-                            Address
-                          </th>
-                          <th className='pb-2  text-left   text-[#7071E8]'>
-                            Stakes <br></br>received
-                          </th>
-                          <th className='pb-2   text-[#7071E8]'>
-                            Credibility <br></br>gained
-                          </th>
-                        </>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(activeTab === 'Your Stakes'
-                      ? stakesData
-                      : receivedData
-                    ).map((data, index) => (
-                      <tr key={index} className='border-b w-4  text-md'>
-                        <td
-                          className='py-2 flex items-center gap-2 text-[#7071E8]'
-                          onClick={() => copyToClipboard(data.address)}
-                        >
-                          {formatAddress(data.address)}
-                          <PiCopySimpleBold className='text-[#7071E8] cursor-pointer' />
-                        </td>
-                        <td className='py-2 text-center text-[#7071E8]'>
-                          {activeTab === 'Your Stakes'
-                            ? data.stake
-                            : data.received}
-                        </td>
-                        <td className='py-2 text-center text-[#7071E8]'>
-                          {activeTab === 'Your Stakes'
-                            ? data.credibility
-                            : data.credibilityGained}
-                        </td>
-                      </tr>
-                    ))}
-                    {(activeTab === 'Your Stakes'
-                      ? stakesData.length
-                      : receivedData.length) === 0 && (
-                      <tr className='flex justify-center items-center pt-2'>
-                        <td className='flex justify-center items-center'>
-                          No Data
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
             </div>
             <div className='main-container-cr w-[60%] max-h-full flex flex-col gap-4 '>
-              <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4  '>
+              <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4 h-full'>
                 <div className='top-data-container flex flex-col gap-2'>
                   <div className='top-container bg-black w-full flex justify-around py-4 '>
                     <div className='data-container flex-1  flex flex-col items-center  justify-center '>
@@ -588,7 +499,7 @@ function Dashboard() {
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
                         <img src={LockedMand}></img>
-                        <div className='text-2xl '>{credScore?.result?.toString() || 0}</div>
+                        <div className='text-2xl '>{credScore?.result?.toString() || 0} CRED</div>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
@@ -630,6 +541,62 @@ function Dashboard() {
               </div>
             </div>
           </div>
+          <div className='overflow-y-auto w-[90%] max-h-[300px] mt-4 border-2 p-2 border-[#7070e86d] '>
+                <table className='w-full text-sm'>
+                  <thead>
+                    <tr className='border-b-2 border-[#7070e86d]  '>
+                      <th className='pb-2 text-left text-[#7071E8]'>
+                        Address
+                      </th>
+                      <th className='pb-2 text-center text-[#7071E8]'>
+                        Your stake
+                      </th>
+                      <th className='pb-2 text-center text-[#7071E8]'>
+                        Credibility given
+                      </th>
+                      <th className='pb-2 text-center text-[#7071E8]'>
+                        Stakes received
+                      </th>
+                      <th className='pb-2 text-center text-[#7071E8]'>
+                        Credibility gained
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {console.log("userStakesData - ", userStakesData)}
+                    {Object.keys(userStakesData).map((data, index) => (
+                      <tr key={index} className='border-b w-4  text-md'>
+                        <td
+                          className='py-2 flex items-center gap-2 text-[#7071E8]'
+                          onClick={() => copyToClipboard(data)}
+                        >
+                          {formatAddress(data)}
+                          <PiCopySimpleBold className='text-[#7071E8] cursor-pointer' />
+                        </td>
+                        <td className='py-2 text-center text-[#7071E8]'>
+                            {userStakesData[data].stake}
+                        </td>
+                        <td className='py-2 text-center text-[#7071E8]'>
+                            {userStakesData[data].received}
+                        </td>
+                        <td className='py-2 text-center text-[#7071E8]'>
+                            {userStakesData[data].credibility}
+                        </td>
+                        <td className='py-2 text-center text-[#7071E8]'>
+                            {userStakesData[data].credibilityGained}
+                        </td>
+                      </tr>
+                    ))}
+                    {Object.keys(userStakesData).length === 0 && (
+                      <tr className='flex justify-center items-center pt-2'>
+                        <td className='flex justify-center items-center'>
+                          No Data
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
         </div>
       </div>
       <ToastContainer
