@@ -97,15 +97,32 @@ contract TrustDrops is Ownable {
         totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
 
         // Update reward details
-        uint currentWeek = block.timestamp / 1 weeks;
-        rewardDetails.weeklyTotalCred[currentWeek] += newTotalReputation - oldTotalReputation;
-        rewardDetails.userWeeklyCred[msg.sender][currentWeek] += newTotalReputation - oldTotalReputation;
-        rewardDetails.lastUpdatedWeek = currentWeek;
-        rewardDetails.userLastUpdatedWeek[msg.sender] = currentWeek;
-        rewardDetails.lastWeeklyTotalCred = rewardDetails.weeklyTotalCred[currentWeek];
-        rewardDetails.lastUserCred[msg.sender] = rewardDetails.userWeeklyCred[msg.sender][currentWeek];
+        _updateStaleWeekData(candidate);
+        _updateCurrentWeeklyCredData(candidate, newTotalReputation - oldTotalReputation, 0);
 
         emit Staked(msg.sender, candidate, amount, newTotalReputation - oldTotalReputation, block.timestamp);
+    }
+
+    function unstake(address candidate, uint amount) external {
+        require(amount > 0, "TrustDrops::Amount must be positive");
+        Stake storage _stake = stakes[msg.sender][candidate];
+        require(_stake.amount >= amount, "TrustDrops::Insufficient staked amount");
+
+        uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
+        _stake.amount -= amount;
+        totalStakedByUser[msg.sender] -= amount;
+        uint newTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
+        reputation[candidate] = reputation[candidate] + newTotalReputation - oldTotalReputation;
+        totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
+
+        // Update rewards details
+        _updateStaleWeekData(candidate);
+        _updateCurrentWeeklyCredData(candidate, newTotalReputation - oldTotalReputation, 1);
+
+        (bool sent, ) = (msg.sender).call{value: amount}("");
+        require(sent, "TrustDrops::Failed to send Ether");
+
+        emit Unstaked(msg.sender, candidate, amount, oldTotalReputation - newTotalReputation, block.timestamp);
     }
 
     function calculateReputation(uint x) internal pure returns (uint) {
@@ -152,11 +169,17 @@ contract TrustDrops is Ownable {
     }
 
     function claimTokens() external {
-        uint currentWeek = block.timestamp / 1 weeks;
         uint alloc = _calculateAllocation(msg.sender);
-        
         require(alloc > 0, "No reward allocation");
+        _updateStaleWeekData(msg.sender);
+        rewardDetails.userLastClaimed[msg.sender] = block.timestamp / 1 weeks;
+        (bool sent, ) = msg.sender.call{value: alloc}("");
+        require(sent, "TrustDrops::Failed to send Ether");
+        emit TokensClaimed(msg.sender, alloc);
+    }
 
+    function _updateStaleWeekData(address _user) internal {
+        uint currentWeek = block.timestamp / 1 weeks;
         // Update the weeklyTotalCred for weeks that haven't been updated
         for (uint week = rewardDetails.lastUpdatedWeek + 1; week <= currentWeek; week++) {
             if (rewardDetails.weeklyTotalCred[week] == 0) {
@@ -167,48 +190,28 @@ contract TrustDrops is Ownable {
         rewardDetails.lastWeeklyTotalCred = rewardDetails.weeklyTotalCred[currentWeek];
 
         // Update the userWeeklyCred for weeks that haven't been updated
-        for (uint week = rewardDetails.userLastUpdatedWeek[msg.sender] + 1; week <= currentWeek; week++) {
-            if (rewardDetails.userWeeklyCred[msg.sender][week] == 0) {
-                rewardDetails.userWeeklyCred[msg.sender][week] = rewardDetails.lastUserCred[msg.sender];
+        for (uint week = rewardDetails.userLastUpdatedWeek[_user] + 1; week <= currentWeek; week++) {
+            if (rewardDetails.userWeeklyCred[_user][week] == 0) {
+                rewardDetails.userWeeklyCred[_user][week] = rewardDetails.lastUserCred[_user];
             }
         }
-        rewardDetails.userLastUpdatedWeek[msg.sender] = currentWeek;
-        rewardDetails.lastUserCred[msg.sender] = rewardDetails.userWeeklyCred[msg.sender][currentWeek];
-
-        rewardDetails.userLastClaimed[msg.sender] = currentWeek;
-        
-        // Transfer the allocated tokens to the user
-        (bool sent, ) = msg.sender.call{value: alloc}("");
-        require(sent, "TrustDrops::Failed to send Ether");
-        
-        emit TokensClaimed(msg.sender, alloc);
+        rewardDetails.userLastUpdatedWeek[_user] = currentWeek;
+        rewardDetails.lastUserCred[_user] = rewardDetails.userWeeklyCred[_user][currentWeek];
     }
 
-    function unstake(address candidate, uint amount) external {
-        require(amount > 0, "TrustDrops::Amount must be positive");
-        Stake storage _stake = stakes[msg.sender][candidate];
-        require(_stake.amount >= amount, "TrustDrops::Insufficient staked amount");
-
-        uint oldTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
-        _stake.amount -= amount;
-        totalStakedByUser[msg.sender] -= amount;
-        uint newTotalReputation = calculateReputation(stakes[msg.sender][candidate].amount);
-        reputation[candidate] = reputation[candidate] + newTotalReputation - oldTotalReputation;
-        totalReputation = totalReputation + newTotalReputation - oldTotalReputation;
-
-        // Update rewards details
+    function _updateCurrentWeeklyCredData(address _user, uint credScore, uint stakeOrUnstake) internal {
         uint currentWeek = block.timestamp / 1 weeks;
-        rewardDetails.weeklyTotalCred[currentWeek] -= oldTotalReputation - newTotalReputation;
-        rewardDetails.userWeeklyCred[msg.sender][currentWeek] -= oldTotalReputation - newTotalReputation;
+        if (stakeOrUnstake == 0) {
+            rewardDetails.weeklyTotalCred[currentWeek] += credScore;
+            rewardDetails.userWeeklyCred[_user][currentWeek] += credScore;
+        } else if (stakeOrUnstake == 1) {
+            rewardDetails.weeklyTotalCred[currentWeek] -= credScore;
+            rewardDetails.userWeeklyCred[_user][currentWeek] -= credScore;
+        }
         rewardDetails.lastUpdatedWeek = currentWeek;
-        rewardDetails.userLastUpdatedWeek[msg.sender] = currentWeek;
+        rewardDetails.userLastUpdatedWeek[_user] = currentWeek;
         rewardDetails.lastWeeklyTotalCred = rewardDetails.weeklyTotalCred[currentWeek];
-        rewardDetails.lastUserCred[msg.sender] = rewardDetails.userWeeklyCred[msg.sender][currentWeek];
-
-        (bool sent, ) = (msg.sender).call{value: amount}("");
-        require(sent, "TrustDrops::Failed to send Ether");
-
-        emit Unstaked(msg.sender, candidate, amount, oldTotalReputation - newTotalReputation, block.timestamp);
+        rewardDetails.lastUserCred[_user] = rewardDetails.userWeeklyCred[_user][currentWeek];
     }
 
     receive() external payable {}
