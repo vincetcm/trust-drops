@@ -541,7 +541,7 @@ function Dashboard() {
               </div>
             </div>
           </div>
-          <div className='overflow-y-auto w-[90%] max-h-[300px] mt-4 border-2 p-2 border-[#7070e86d] '>
+          <div className='w-[90%] mt-4 border-2 p-2 border-[#7070e86d] '>
                 <table className='w-full text-sm'>
                   <thead>
                     <tr className='border-b-2 border-[#7070e86d]  '>
