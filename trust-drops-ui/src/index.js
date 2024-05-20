@@ -5,6 +5,7 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { WagmiProvider, http, createConfig } from 'wagmi';
+import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mandeChain = {
@@ -17,15 +18,22 @@ const mandeChain = {
     default: { http: ['https://json-rpc.mande.evm.ra.intdev.noisnemyd.xyz'] },
   }
 };
-
+const projectId = '4c106dfb35fee36a609a9442a2257f6b';
 const config = createConfig({
   appName: 'Mande Network',
   chains: [
     mandeChain,
   ],
+  connectors: [
+    injected(),
+    walletConnect({ projectId }),
+    metaMask(),
+    safe(),
+  ],
   transports: {
     [mandeChain.id]: http(),
   },
+  projectId: '4c106dfb35fee36a609a9442a2257f6b'
 });
 
 const queryClient = new QueryClient();
