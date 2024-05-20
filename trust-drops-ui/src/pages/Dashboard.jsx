@@ -577,10 +577,10 @@ function Dashboard() {
                             {userStakesData[data].stake}
                         </td>
                         <td className='py-2 text-center text-[#7071E8]'>
-                            {userStakesData[data].received}
+                            {userStakesData[data].credibility}
                         </td>
                         <td className='py-2 text-center text-[#7071E8]'>
-                            {userStakesData[data].credibility}
+                            {userStakesData[data].received}
                         </td>
                         <td className='py-2 text-center text-[#7071E8]'>
                             {userStakesData[data].credibilityGained}
