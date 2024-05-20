@@ -32,8 +32,7 @@ const config = createConfig({
   ],
   transports: {
     [mandeChain.id]: http(),
-  },
-  projectId: '4c106dfb35fee36a609a9442a2257f6b'
+  }
 });
 
 const queryClient = new QueryClient();
