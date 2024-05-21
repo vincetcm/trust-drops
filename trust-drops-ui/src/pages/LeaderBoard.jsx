@@ -13,7 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { motion } from 'framer-motion';
 import { ethers } from 'ethers';
 import { createClient, cacheExchange, fetchExchange } from 'urql';
-import { DataContext } from '../context/DataContext';
+import { useAccount } from 'wagmi'
 
 function LeaderBoard() {
   // Check the value of sendMessage
@@ -23,7 +23,7 @@ function LeaderBoard() {
   const [boardItems, setBoardItems] = useState([]);
   const [userBoardItem, setUserBoardItem] = useState();
   const [totalPages, setTotalPages] = useState(1);
-  const { accountAddress, trustdropContract } = useContext(DataContext);
+  const account = useAccount();
 
   useEffect(() => {
     (async () => {
@@ -41,20 +41,20 @@ function LeaderBoard() {
       });
 
       const data = await client.query(countQuery).toPromise();
-      console.log('subgraph count data - ', data.data.aggregated.usersCount);
+      console.log('subgraph count data - ', data?.data?.aggregated.usersCount);
       setTotalPages(
-        parseInt(data.data.aggregated.usersCount / itemsPerPage) + 1
+        parseInt(data?.data?.aggregated.usersCount / itemsPerPage) + 1
       );
     })();
   }, []);
 
   useEffect(() => {
-    if (!accountAddress || !trustdropContract?.address) return;
+    if (!account?.address) return;
 
     (async () => {
       let userRank = 0;
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}userRank/${accountAddress}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}userRank/${account?.address}`);
         const userRankJson = await res.json();
         userRank = userRankJson.rank;
       } catch (err) {
@@ -62,7 +62,7 @@ function LeaderBoard() {
       }
       const userQuery = `
         query {
-          user(id: "${accountAddress}") {
+          user(id: "${account?.address}") {
             id
             address
             tokenStaked
@@ -86,7 +86,7 @@ function LeaderBoard() {
       console.log('userData - ', userBoardData);
       setUserBoardItem(userBoardData);
     })();
-  }, [accountAddress, trustdropContract]);
+  }, [account?.address]);
 
   useEffect(() => {
     (async () => {
@@ -254,7 +254,7 @@ function LeaderBoard() {
                           ...boardItems.filter(
                             (result) =>
                               result.wallet.toLowerCase() !==
-                              accountAddress.toLowerCase()
+                              account?.address?.toLowerCase()
                           ),
                         ]
                           .filter((result) => result !== undefined)
@@ -267,7 +267,7 @@ function LeaderBoard() {
                                 className={
                                   'text-left py-3  px-4 flex items-center ' +
                                   (item.wallet.toLowerCase() ==
-                                  accountAddress.toLowerCase()
+                                  account?.address?.toLowerCase()
                                     ? 'text-[#7071E8]'
                                     : '')
                                 }
