@@ -28,6 +28,7 @@ const envsSchema = Joi.object()
     ADMIN_KEY: Joi.string().required(),
     UI_ENDPOINT: Joi.string().required(),
     SUBGRAPH_ENDPOINT: Joi.string().required(),
+    K: Joi.number().required(),
   })
   .unknown(true);
 
@@ -60,4 +61,5 @@ export default {
   adminKey: envVars.ADMIN_KEY,
   uiEndpoint: envVars.UI_ENDPOINT,
   subgraphEndpoint: envVars.SUBGRAPH_ENDPOINT,
+  k: envVars.K,
 };

@@ -11,6 +11,8 @@ import {
 import { Client, auth } from 'twitter-api-sdk';
 import { IUser } from '@components/user/user.interface';
 import config from '@config/config';
+import Web3 from 'web3';
+const web3 = new Web3(process.env.HTTP_RPC_URL);
 const STATE = 'trustdrops';
 const CODE_CHALLENGE= 'a543d136-2cc0-4651-b571-e972bf116556';
 
@@ -44,6 +46,20 @@ const queueTest = async (req: Request, res: Response) => {
   queueApproval(user);
   res.send({ message: 'queued' });
 };
+const calcAirdropAmount = async (userData): Promise<String> => {
+  const followers = userData.public_metrics.followers_count;
+  if (followers < 100) {
+    return web3.utils.toWei('0', 'ether');
+  }
+
+
+  // fetch price using spot-price query from dymension
+  const price = 1;
+  const N = config.k * price;
+  if (followers >= 100) {
+    return web3.utils.toWei((Math.sqrt(followers)/N).toString(), 'ether');
+  }
+}
 
 const linkUserTwitter = async (req: Request, res: Response) => {
   try {
@@ -85,12 +101,19 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter account must have atleast 25 followers!' });
       return;
     }
-    // await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
-    // console.log('followed mande twitter');
+    if (userData.data.public_metrics.followers_count >= 250) {
+      await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
+      console.log('followed mande twitter');
+    }
+
+    const airdropAmount = calcAirdropAmount(userData.data);
+
     const user = {
       address,
       signature,
       twitterId: userData.data.id,
+      twitterUserName: userData.data.username,
+      airdropAmount: 
     } as IUser;
     try {
       if (dbUser) {
