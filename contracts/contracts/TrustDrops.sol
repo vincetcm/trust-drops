@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
+pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TrustDrops is Ownable {
     uint public totalReputation;
     uint public seedFund;
+    uint public deploymentWeek;
     uint public approvalAirdropAmount = 30 * 1e18;
     address public approver;
 
@@ -20,6 +21,11 @@ contract TrustDrops is Ownable {
     struct Candidate {
         address[] stakers;
         mapping(address => bool) hasStaked;
+    }
+
+    struct WeeklyRewardsParam {
+        uint weekNumber;
+        uint reward;
     }
 
     struct RewardDetails {
@@ -49,6 +55,7 @@ contract TrustDrops is Ownable {
 
     constructor() Ownable(msg.sender) {
         approver = msg.sender;
+        deploymentWeek = block.timestamp / 1 weeks;
     }
 
     function updateApprover(address _newApprover) external onlyOwner {
@@ -61,6 +68,12 @@ contract TrustDrops is Ownable {
 
     function updateAirdropAmount(uint _updatedAmount) onlyOwner() external {
         approvalAirdropAmount = _updatedAmount;
+    }
+
+    function updateWeeklyTotalRewards(WeeklyRewardsParam[] memory _weeklyRewards) external {
+        for (uint i=0; i<_weeklyRewards.length; i++) {
+            rewardDetails.weeklyTotalRewards[_weeklyRewards[i].weekNumber] = _weeklyRewards[i].reward;
+        }
     }
 
     function approve(address _user, bytes32 _id) external {
@@ -117,7 +130,7 @@ contract TrustDrops is Ownable {
 
         // Update rewards details
         _updateStaleWeekData(candidate);
-        _updateCurrentWeeklyCredData(candidate, newTotalReputation - oldTotalReputation, 1);
+        _updateCurrentWeeklyCredData(candidate, oldTotalReputation - newTotalReputation, 1);
 
         (bool sent, ) = (msg.sender).call{value: amount}("");
         require(sent, "TrustDrops::Failed to send Ether");
@@ -133,20 +146,34 @@ contract TrustDrops is Ownable {
             y = z;
             z = (x / z + z) / 2;
         }
-        return y/1e9;
+        return y/1e7;
     }
 
     function allocation(address _user) external view returns(uint) {
         return _calculateAllocation(_user);
     }
 
+    function currentRelativeWeek() internal view returns(uint) {
+        return  (block.timestamp / 1 weeks) - deploymentWeek + 1;
+    }
+
+    function tempCurrentRelativeWeek() external view returns(uint) {
+        return  (block.timestamp / 1 weeks) - deploymentWeek + 1;
+    }
+
     function _calculateAllocation(address _user) internal view returns(uint) {
-        uint currentWeek = block.timestamp / 1 weeks;
-        uint userLastClaimed = rewardDetails.userLastClaimed[_user];
-        
+        if (currentRelativeWeek() == 1) {
+            return 0;
+        }
+        uint currentWeek = currentRelativeWeek() - 1;
+        uint startingWeek = rewardDetails.userLastClaimed[_user];
+        if(startingWeek != 0) {
+            startingWeek += 1;
+        }
+
         uint totalReward = 0;
         
-        for (uint week = userLastClaimed + 1; week <= currentWeek; week++) {
+        for (uint week = startingWeek; week <= currentWeek; week++) {
             uint userCred = rewardDetails.userWeeklyCred[_user][week];
             uint weekTotalCred = rewardDetails.weeklyTotalCred[week];
             uint weekTotalRewards = rewardDetails.weeklyTotalRewards[week];
@@ -172,14 +199,14 @@ contract TrustDrops is Ownable {
         uint alloc = _calculateAllocation(msg.sender);
         require(alloc > 0, "No reward allocation");
         _updateStaleWeekData(msg.sender);
-        rewardDetails.userLastClaimed[msg.sender] = block.timestamp / 1 weeks;
+        rewardDetails.userLastClaimed[msg.sender] = currentRelativeWeek() - 1;
         (bool sent, ) = msg.sender.call{value: alloc}("");
         require(sent, "TrustDrops::Failed to send Ether");
         emit TokensClaimed(msg.sender, alloc);
     }
 
     function _updateStaleWeekData(address _user) internal {
-        uint currentWeek = block.timestamp / 1 weeks;
+        uint currentWeek = currentRelativeWeek();
         // Update the weeklyTotalCred for weeks that haven't been updated
         for (uint week = rewardDetails.lastUpdatedWeek + 1; week <= currentWeek; week++) {
             if (rewardDetails.weeklyTotalCred[week] == 0) {
@@ -200,7 +227,7 @@ contract TrustDrops is Ownable {
     }
 
     function _updateCurrentWeeklyCredData(address _user, uint credScore, uint stakeOrUnstake) internal {
-        uint currentWeek = block.timestamp / 1 weeks;
+        uint currentWeek = currentRelativeWeek();
         if (stakeOrUnstake == 0) {
             rewardDetails.weeklyTotalCred[currentWeek] += credScore;
             rewardDetails.userWeeklyCred[_user][currentWeek] += credScore;

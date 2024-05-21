@@ -4,27 +4,37 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+interface IRewardDistributor {
+    function allocation(address _address) external returns (uint);
+}
+
 contract RewardsDistributor is Ownable {
-    uint256 totalAllocationLocked;
+    IRewardDistributor public distributorv1 = IRewardDistributor(0xe1E4c0562780A0b7ecF9231697FB883205c6A977);
     mapping(address => uint) public allocation;
+    bool public allocateOldRewards;
 
     struct AllocateParams {
         address userAddress;
-        uint256 share;
+        uint256 allo;
     }
 
-    constructor(address _owner) Ownable(_owner) {}
+    constructor(address _owner) Ownable(_owner) {
+        allocateOldRewards = true;
+    }
+
+    function disableOldRewards() external onlyOwner {
+        allocateOldRewards = false;
+    }
 
     function allocate(AllocateParams[] memory _allocations) external onlyOwner {
-        uint fundsToAllocate = address(this).balance - totalAllocationLocked;
-        require(fundsToAllocate >= 0, "No funds to allocate!");
         for (uint i=0; i<_allocations.length; i++) {
-            if (_allocations[i].userAddress == address(0) || _allocations[i].share == 0) {
+            if (_allocations[i].userAddress == address(0)) {
                 continue;
             }
-            uint allocatedFund = (fundsToAllocate * _allocations[i].share) / 1e18;
-            allocation[_allocations[i].userAddress] += allocatedFund;
-            totalAllocationLocked += allocatedFund;
+            allocation[_allocations[i].userAddress] += _allocations[i].allo;
+            if (allocateOldRewards) {
+                allocation[_allocations[i].userAddress] += distributorv1.allocation(_allocations[i].userAddress);
+            }
         }
     }
 
@@ -32,7 +42,6 @@ contract RewardsDistributor is Ownable {
         require(allocation[msg.sender] > 0, "No reward allocation");
         uint reward = allocation[msg.sender];
         allocation[msg.sender] = 0;
-        totalAllocationLocked -= reward;
         (bool sent, ) = (msg.sender).call{value: reward}("");
         require(sent, "RewardsDistributor::Failed to send Ether");
     }

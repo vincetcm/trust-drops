@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-const trustDropAddress = "0x9fD2Cd5aA147e3dfCB41e65C126D66d05D7747Fd";
+const trustDropAddress = "0x555b23fCC5d38FbDAa646d51524DD017CB97f395";
 
 async function stake(signer, address, amount) {
   const trustDropsFactory = await ethers.getContractFactory("TrustDrops");
@@ -25,8 +25,16 @@ async function main() {
   const trustDropsFactory = await ethers.getContractFactory("TrustDrops");
   const trustDrops = trustDropsFactory.attach(trustDropAddress);
 
-  // let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('300')});
+  // const approved = await trustDrops.approvedAddress("0x00dda9fd9a50b4d5e1586d1752c3b3840e4f0234");
+  // console.log(approved);
+  // const approver = await trustDrops.approver();
+  // console.log(approver)
+
+  // let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('500000')});
   // await seedFundTx.wait();
+
+  // const provider = await ethers.getDefaultProvider()
+  // console.log(await ethers.provider.getBalance("0xe1E4c0562780A0b7ecF9231697FB883205c6A977"));
   
   // try {
   //   let approveTx = await trustDrops.approve("0xEDa85d5bA2eB6a20aaE7A5458fFac7F4AA74f7ed", ethers.keccak256(ethers.toUtf8Bytes("example")));
@@ -44,21 +52,33 @@ async function main() {
   
   // const tx = {
   //     to: trustDropAddress,
-  //     value: ethers.parseEther('300')
+  //     value: ethers.parseEther('1'),
+  //     gasLimit: 250000000,
+  //     gasPrice: 100
   // };
   // const sendEthTx = await signer[0].sendTransaction(tx);
   // await sendEthTx.wait();
+  let allocation = await trustDrops.seedFund();
+  console.log("check allocation - ", ethers.formatEther(allocation));
 
-  const tx = {
-    to: "0xCE960B379294DeCeDe2e5Dfa5Dc6Dc099ca64dAC",
-    value: ethers.parseEther('300')
-};
-const sendEthTx = await signer[0].sendTransaction(tx);
-await sendEthTx.wait();
+  let checkAddr = await trustDrops.totalReputation();
+  console.log("check allocation - ", checkAddr);
 
-  // let allocation = await trustDrops.allocation("0x5E0689720093Db5D739Ec1CC266f321026AcD5D5");
-  // console.log("check allocation - ", allocation);
+//   const tx = {
+//     to: "0xED71848f4e3DE1781781062f2afc9873d9bCb0c3",
+//     value: ethers.parseEther('2000000')
+// };
+// const sendEthTx = await signer[0].sendTransaction(tx);
+// await sendEthTx.wait();
 
+
+  // let totRep = await trustDrops.allocation("0x9c23F47Feb605f7C1674Ab4E6E3E64E2Cd195d1e");
+  // console.log("check totRep - ", totRep);
+
+  // const rewardDistributorFactory = await ethers.getContractFactory("RewardsDistributor");
+  // const rewardDistro = rewardDistributorFactory.attach("0x9Da7d191681Fc24Dc9832E050A4465636D51d647");
+  // let totRep = await rewardDistro.allocation("0x8d758a992fd0f8762292d6fef975bc4363a571af");
+  // console.log("check totRep - ", totRep);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
