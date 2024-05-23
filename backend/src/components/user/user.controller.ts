@@ -8,11 +8,12 @@ import {
   queueApproval,
   authClient
 } from '@components/user/user.service';
+import { readLatest } from '@components/airdropFactor/airdropFactor.service';
 import { Client, auth } from 'twitter-api-sdk';
 import { IUser } from '@components/user/user.interface';
 import config from '@config/config';
 import Web3 from 'web3';
-const web3 = new Web3(process.env.HTTP_RPC_URL);
+const web3 = new Web3(config.httpRpc);
 const STATE = 'trustdrops';
 const CODE_CHALLENGE= 'a543d136-2cc0-4651-b571-e972bf116556';
 
@@ -52,12 +53,9 @@ const calcAirdropAmount = async (userData): Promise<String> => {
     return web3.utils.toWei('0', 'ether');
   }
 
-
-  // fetch price using spot-price query from dymension
-  const price = 1;
-  const N = config.k * price;
+  const n = (await readLatest()).n;
   if (followers >= 100) {
-    return web3.utils.toWei((Math.sqrt(followers)/N).toString(), 'ether');
+    return web3.utils.toWei((Math.sqrt(followers) / n).toString(), 'ether');
   }
 }
 
@@ -106,14 +104,12 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       console.log('followed mande twitter');
     }
 
-    const airdropAmount = calcAirdropAmount(userData.data);
-
     const user = {
       address,
       signature,
       twitterId: userData.data.id,
       twitterUserName: userData.data.username,
-      airdropAmount: 
+      airdropAmount: await calcAirdropAmount(userData.data)
     } as IUser;
     try {
       if (dbUser) {
@@ -127,9 +123,8 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       return;
     }
 
-
     res.status(httpStatus.OK);
-    res.send({ message: 'Linked' });
+    res.send({ message: 'Linked', user });
   } catch (error) {
     console.log(error);
     res.send({ error });

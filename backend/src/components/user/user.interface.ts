@@ -5,7 +5,7 @@ export interface IUser {
   signature: string;
   approved?: boolean;
   twitterUserName?: string;
-  airdropAmount?: number;
+  airdropAmount?: string;
 }
 
 export interface IUpdateUser {

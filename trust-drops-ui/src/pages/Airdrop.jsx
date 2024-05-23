@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import AirdropImg from '../assets/airdropImage.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -6,7 +6,8 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useSignMessage, useAccount } from 'wagmi'
+import { useSignMessage, useAccount } from 'wagmi';
+import { ethers } from 'ethers';
 
 function Airdrop() {
 
@@ -85,6 +86,11 @@ function Airdrop() {
     signMessage({message: 'Trustdrops login'});
   }
 
+  const truncateAmount = (amount) => {
+    const formattedAmount = ethers.utils.formatUnits(amount);
+    return (+formattedAmount).toFixed(2);
+  };
+
   const linkWalletX = async () => {
     const payload = {
       "address": account.address,
@@ -100,7 +106,7 @@ function Airdrop() {
       const resp =  await res.json();
       if (resp.message == "Linked") {
         setUser({approved: true});
-        toast("You will receive 30 MAND soon", {icon: "🚀"});
+        toast(`You will receive ${truncateAmount(resp.user.airdropAmount)} MAND soon`, {icon: "🚀"});
       } else if (resp.message) {
         navigate("/airdrop", { replace: true });
         toast.error(resp.message);

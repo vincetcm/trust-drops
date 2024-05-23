@@ -7,7 +7,7 @@ import { AbiItem } from 'web3-utils'
 import {
   update
 } from '@components/user/user.service';
-const web3 = new Web3(process.env.HTTP_RPC_URL);
+const web3 = new Web3(config.httpRpc);
 
 class TransactionsQueue {
   public channel: any;
@@ -60,6 +60,11 @@ class TransactionsQueue {
                   "internalType": "bytes32",
                   "name": "_id",
                   "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_amount",
+                  "type": "uint256"
                 }
               ],
               "name": "approve",
@@ -80,6 +85,7 @@ class TransactionsQueue {
               .approve(
                 user.address,
                 web3.utils.keccak256(user.twitterId),
+                user.airdropAmount
               )
             const encoded = methodCall.encodeABI();
             methodCall.estimateGas({ from: adminAddress.address }).then(gas => {
@@ -91,6 +97,9 @@ class TransactionsQueue {
                 from: adminAddress.address,
               };
               console.log(tx);
+              web3.eth.getBalance(adminAddress.address).then(console.log);
+              web3.eth.getBalance(config.trustdropsContractAddress).then(console.log);
+
               web3.eth.accounts.signTransaction(
                 tx,
                 config.adminKey,

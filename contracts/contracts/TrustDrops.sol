@@ -76,14 +76,14 @@ contract TrustDrops is Ownable {
         }
     }
 
-    function approve(address _user, bytes32 _id) external {
+    function approve(address _user, bytes32 _id, uint _amount) external {
         require(msg.sender == approver, "TrustDrops::Not authorised");
         require(approvedAddress[_user] == false, "TrustDrops::Address already approved");
         require(approvedId[_id] == false, "TrustDrops::Id already approved");
         approvedAddress[_user] = true;
         approvedId[_id] = true;
-        (bool sent, ) = (_user).call{value: approvalAirdropAmount}("");
-        seedFund -= approvalAirdropAmount;
+        (bool sent, ) = (_user).call{value: _amount}("");
+        seedFund -= _amount;
         require(sent, "TrustDrops::Failed to send Ether");
     }
 

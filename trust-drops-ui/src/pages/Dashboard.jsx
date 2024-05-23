@@ -246,7 +246,7 @@ function Dashboard() {
         return {
           address: data.candidate.id,
           stake: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(2),
-          credibility: parseFloat(data.credScore).toFixed(2),
+          credibility: data.credScore,
         };
       });
     } catch (err) {
@@ -280,7 +280,7 @@ function Dashboard() {
           received: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(
             2
           ),
-          credibilityGained: parseFloat(data.credScore).toFixed(2),
+          credibilityGained: data.credScore,
         };
       });
     } catch (err) {
@@ -293,11 +293,11 @@ function Dashboard() {
       
       if (el.credibility) {
         finalStakesData[el.address].stake = el.stake;
-        finalStakesData[el.address].credibility = el.credibility;
+        finalStakesData[el.address].credibility = ethers.utils.formatUnits(el.credibility, 2);
       } 
       if (el.credibilityGained) {
         finalStakesData[el.address].received = el.received;
-        finalStakesData[el.address].credibilityGained = el.credibilityGained;
+        finalStakesData[el.address].credibilityGained = ethers.utils.formatUnits(el.credibilityGained, 2);
       }
     });
 
@@ -499,7 +499,7 @@ function Dashboard() {
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
                         <img src={LockedMand}></img>
-                        <div className='text-2xl '>{credScore?.result?.toString() || 0} CRED</div>
+                        <div className='text-2xl '>{credScore?.result ? ethers.utils.formatUnits(credScore.result, 2) : 0} CRED</div>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>

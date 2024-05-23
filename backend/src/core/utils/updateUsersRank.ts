@@ -1,4 +1,4 @@
-import { IUpdateUserRank, IUserRank } from '@components/userRank/userRank.interface';
+import { IUserRank } from '@components/userRank/userRank.interface';
 import config from '@config/config';
 import {
   createAll,
