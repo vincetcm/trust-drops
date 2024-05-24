@@ -127,35 +127,35 @@ function Airdrop() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
-      <div className=' flex  justify-center  h-[90vh]  bg-black   text-white font-mono'>
-        <div className='left-contianer w-[60%]  pl-[5%] flex flex-col gap-6  mt-10'>
+      <div className=' flex  justify-center  bg-black   text-white font-mono'>
+        <div className='left-contianer md:w-[60%] max-md:w-[95%] pl-[5%] flex flex-col gap-6  mt-10'>
           <div className='topLeftContainer '>
-            <div className='small-text  text-[16px] text-slate-400'>
+            <div className='small-text md:text-[16px] text-[12px] text-slate-400'>
               YOU'RE ALMOST THERE
             </div>
-            <div className='Large-text text-[32px]'>To claim your airdrop:</div>
+            <div className='Large-text md:text-[32px] text-[18px]'>To claim your airdrop:</div>
           </div>
           <div className='bottomContainer bg-airdrop-gradient px-8 py-8 flex flex-col '>
             <div className='flex justify-between  '>
-              <div className='flex gap-2 items-center '>
+              <div className='flex gap-2 items-center'>
                 <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                   1
                 </div>
-                <div className='text-container  text-black'>
+                <div className='text-container text-black max-md:hidden'>
                   Connect with twitter/X
                 </div>
               </div>
-              <button className='flex justify-center items-center button-container bg-black px-4 py-2 text-center  w-[200px]' disabled={(twitterAuthCode && twitterAuthCode.length>0) || (user && user.approved)} onClick={twitterAuth}>
+              <button className='flex justify-center items-center button-container bg-black px-4 self-center py-2 text-center w-[200px] max-md:w-full' disabled={(twitterAuthCode && twitterAuthCode.length>0) || (user && user.approved)} onClick={twitterAuth}>
                 {twitterAuthCode || (user && user.approved) ? "✔️" : "Connect twitter"}
               </button>
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
-              <div className='flex gap-2 items-center '>
+              <div className='flex gap-2 items-center'>
                 <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                   2
                 </div>
-                <div className='text-container text-black'>
+                <div className='text-container text-black max-md:hidden'>
                   Connect your wallet
                 </div>
               </div>
@@ -163,15 +163,15 @@ function Airdrop() {
             </div>
             <hr className='w-[90%] flex self-center  my-[10px] h-[0.5px] bg-black border-[0px]' />
             <div className='flex justify-between'>
-              <div className='flex gap-2 items-center  flex-1   '>
+              <div className='flex gap-2 items-center'>
                 <div className='sno px-3 py-1 text-[16px]  bg-black rounded-full'>
                   3
                 </div>
-                <div className='text-container text-black'>
+                <div className='text-container text-black max-md:hidden'>
                   Link your wallet with twitter/X
                 </div>
               </div>
-              <button className='flex justify-center items-center button-container bg-black px-4 self-center py-2 text-center w-[200px]' disabled={linkLoading || (user && user.approved)} onClick={initLinkWalletX}>
+              <button className='flex justify-center items-center button-container bg-black px-4 self-center py-2 text-center w-[200px] max-md:w-full' disabled={linkLoading || (user && user.approved)} onClick={initLinkWalletX}>
                 {!linkLoading && (user && user.approved ? "✔️" : "Link both")}
                 {linkLoading && <ClipLoader color={"white"} size={25} />}
               </button>

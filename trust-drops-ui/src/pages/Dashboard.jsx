@@ -331,7 +331,7 @@ function Dashboard() {
             </div>
           </div>
           <div className='main-container  flex flex-col md:flex-row justify-between gap-4 mt-4 w-[90%]'>
-            <div className='credibility-staking-container  bg-[rgba(112,113,232,0.03)] border-2  border-[#7071E8] p-4 md:p-5 shadow-md w-[40%] mb-4 md:mb-0 '>
+            <div className='credibility-staking-container  bg-[rgba(112,113,232,0.03)] border-2  border-[#7071E8] p-4 md:p-5 shadow-md md:w-[40%] mb-4 md:mb-0 '>
               <h1 className='text-2xl font-bold mb-4  text-[#7071E8] uppercase'>
                 Stake on Trust
               </h1>
@@ -436,18 +436,18 @@ function Dashboard() {
                 )}
               </div>
             </div>
-            <div className='main-container-cr w-[60%] max-h-full flex flex-col gap-4 '>
+            <div className='main-container-cr md:w-[60%] max-h-full flex flex-col gap-4 '>
               <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4 h-full'>
                 <div className='top-data-container flex flex-col gap-2'>
-                  <div className='top-container bg-black w-full flex justify-around py-4 '>
-                    <div className='data-container flex-1  flex flex-col items-center  justify-center '>
+                  <div className='top-container bg-black w-full flex max-md:flex-col justify-around py-4 '>
+                    <div className='data-container flex-1  flex flex-col items-center  justify-center max-md:pb-5'>
                       <div className='title text-[#7071E8]'>Rank</div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={RankIcon}></img>
                         <div className='text'>{userRank}</div>
                       </div>
                     </div>{' '}
-                    <div className='data-container flex flex-col flex-1 items-center  justify-center border-l-[1px] border-[#7071E8]'>
+                    <div className='data-container flex flex-col flex-1 items-center  justify-center max-md:pb-5 md:border-l-[1px] md:border-[#7071E8]'>
                       <div className='title text-[#7071E8]'>
                         Available $MAND
                       </div>
@@ -456,7 +456,7 @@ function Dashboard() {
                         <div className='text'>{mandBalance?.value ? truncateAmount(mandBalance.value) : 0}</div>
                       </div>
                     </div>{' '}
-                    <div className='data-container flex flex-col items-center  justify-center flex-1 border-l-[1px] border-[#7071E8] '>
+                    <div className='data-container flex flex-col items-center  justify-center flex-1 md:border-l-[1px] md:border-[#7071E8] '>
                       <div className='title text-[#7071E8]'>Locked $MAND</div>
                       <div className='data-value-container text-[24px] flex gap-[4px]'>
                         <img src={LockedMand}></img>
@@ -464,8 +464,8 @@ function Dashboard() {
                       </div>
                     </div>{' '}
                   </div>
-                  <div className='bottom-container flex  justify-around'>
-                    <div className='data-container flex flex-col gap-2 items-center  justify-center bg-black min-w-[280px]  max-w-[30%]'>
+                  <div className='bottom-container flex max-md:flex-col justify-around'>
+                    <div className='data-container flex flex-col gap-2 items-center  justify-center bg-black w-[40%] max-md:w-[100%]'>
                       <div className='title mt-2 text-[#7071E8]'>
                         Credibility staking rewards
                       </div>
@@ -492,7 +492,7 @@ function Dashboard() {
                         </div>
                       </div>
                     </div>{' '}
-                    <div className='data-container flex flex-col  items-center  justify-between bg-black min-w-[280px] max-w-[30%] '>
+                    <div className='data-container flex flex-col  items-center  justify-between bg-black w-[40%] max-md:mt-2 max-md:w-[100%]'>
                       <div className='title mt-2 text-[#7071E8]'>
                         Your credibility score
                       </div>
@@ -512,7 +512,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className='credibiliy-rewards-container  mb-4 bg-white  h-[50%]  text-black placeholder:p-2 p-2'>
+                <div className='credibiliy-rewards-container  mb-4 bg-white  h-[60%]  text-black placeholder:p-2 p-2'>
                   <div className='heading text-2xl font-bold text-[#7071E8]'>
                     How is credibility calculated?
                   </div>
@@ -541,8 +541,8 @@ function Dashboard() {
               </div>
             </div>
           </div>
-          <div className='w-[90%] mt-4 border-2 p-2 border-[#7070e86d] '>
-                <table className='w-full text-sm'>
+          <div className='overflow-y-auto w-[90%] mt-4 border-2 p-2 border-[#7070e86d] '>
+                <table className='w-full text-sm table-auto overflow-x-auto'>
                   <thead>
                     <tr className='border-b-2 border-[#7070e86d]  '>
                       <th className='pb-2 text-left text-[#7071E8]'>
