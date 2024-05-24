@@ -81,13 +81,13 @@ function LandingPage() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
-      <div className=' flex  justify-center   h-[90vh] bg-black   text-white font-mono'>
+      <div className=' flex  justify-center   md:h-[90vh] bg-black   text-white font-mono'>
         <div className='left-container w-[60%] pl-[5%] flex flex-col justify-between  '>
           <div className='text-container flex flex-col gap-2 flex-1 justify-center'>
-            <div className='hero-title font-semibold text-[36px] '>
+            <div className='hero-title font-semibold md:text-[36px] text-[18px] '>
               Credibility is the currency of trust, invaluable yet hard-earned.
             </div>
-            <div className='hero-description  text-[20px] text-slate-400'>
+            <div className='hero-description  md:text-[20px] text-[12px] text-slate-400'>
               Experience the value of trust in every interaction. At Mande
               Network, credibility is the cornerstone of our decentralized
               ecosystem, empowering users to forge genuine connections and drive
@@ -96,15 +96,15 @@ function LandingPage() {
             <div className='button flex '>
               <Link
                 to={'/airdrop'}
-                className={`button  text-[#7071E8] text-[28px] font-semibold bg-hero-button border-[1px] px-2 border-[rgb(112,113,232)] mt-8 flex justify-start  cursor-pointer shadow-[#7071E8] shadow-md hover:shadow-[5px_5px_rgba(112,_113,_232,_0.4),_10px_10px_rgba(112,_113,_232,_0.3),_15px_15px_rgba(0,0,0,_0.0),_20px_20px_rgba(0,0,0,_0.0),_25px_25px_rgba(112,_113,_232,_0.05)]  `}
+                className={`button  text-[#7071E8] md:text-[28px] text-[15px] font-semibold bg-hero-button border-[1px] px-2 border-[rgb(112,113,232)] mt-8 flex justify-start  cursor-pointer shadow-[#7071E8] shadow-md hover:shadow-[5px_5px_rgba(112,_113,_232,_0.4),_10px_10px_rgba(112,_113,_232,_0.3),_15px_15px_rgba(0,0,0,_0.0),_20px_20px_rgba(0,0,0,_0.0),_25px_25px_rgba(112,_113,_232,_0.05)]  `}
               >
                 Earn $MAND
               </Link>
             </div>
           </div>
-          <div className='button-container flex  gap-2 mb-8'>
+          <div className='button-container md:flex max-md:absolute max-md:bottom-0 gap-2 md:mb-8'>
             <div className='text-[#7071E8]'>Powered by </div>
-            <img src={DymentionLogo} className='w-36  '></img>
+            <img src={DymentionLogo} className='w-36 max-md:w-20'></img>
           </div>
         </div>
         <div className='right-container  w-[40%]  h-full '>

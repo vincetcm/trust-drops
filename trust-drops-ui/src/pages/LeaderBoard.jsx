@@ -76,15 +76,17 @@ function LeaderBoard() {
         exchanges: [cacheExchange, fetchExchange],
       });
       const userData = await client.query(userQuery).toPromise();
-      const userBoardData = {
-        rank: userRank,
-        wallet: userData.data.user.address,
-        credibilityScore: userData.data.user.credScoreAccrued,
-        lockedMand: userData.data.user.tokenStaked,
-        credibilityGiven: userData.data.user.credScoreDistributed,
-      };
-      console.log('userData - ', userBoardData);
-      setUserBoardItem(userBoardData);
+      if (userData.data.user) {
+        const userBoardData = {
+          rank: userRank,
+          wallet: userData.data.user.address,
+          credibilityScore: userData.data.user.credScoreAccrued,
+          lockedMand: userData.data.user.tokenStaked,
+          credibilityGiven: userData.data.user.credScoreDistributed,
+        };
+        console.log('userData - ', userBoardData);
+        setUserBoardItem(userBoardData);
+      }
     })();
   }, [account?.address]);
 
@@ -200,7 +202,7 @@ function LeaderBoard() {
           <div className='description-container text-slate-300'>
             The top 10000 addresses on the testnet leaderboard will receive the
             following Mainnet airdrops:
-            <div className=' flex gap-8'>
+            <div className='md:flex gap-8'>
               <ul className='list-disc ml-5'>
                 <li>Top 10: 2,000 $MAND each</li>
                 <li>Top 11-25: 1,500 $MAND each</li>
@@ -220,9 +222,9 @@ function LeaderBoard() {
         <div className='table-container w-full'>
           <div className=' overflow-y-auto h-full w-full flex  items-start '>
             <div className='w-full '>
-              <div className='mt-2'>
-                <div className='shadow overflow-hidden  border-8 border-[#7071E8] '>
-                  <table className='w-full bg-white'>
+              <div className='flex flex-col mt-2'>
+                <div className='shadow'>
+                  <table className='border-8 border-[#7071E8] w-full bg-white table-auto overflow-x-auto'>
                     <thead className='text-black bg-[#7071E8] '>
                       <tr>
                         <th className='text-left py-3 px-4 uppercase font-semibold text-sm  '>
@@ -294,9 +296,7 @@ function LeaderBoard() {
                     </tbody>
                   </table>
                 </div>
-
-                <div className='flex flex-col xs:flex-row items-center xs:justify-between mt-4'>
-                  <div className='flex overflow-x-auto'>
+                <div className='flex overflow-x-auto items-center md:justify-center xs:justify-between mt-4'>
                     <button
                       className=' p-2  text-base  text-black bg-[#7071E8]  hover:bg-[#7070e8d0]'
                       onClick={() => goToPage(currentPage - 1)}
@@ -312,7 +312,6 @@ function LeaderBoard() {
                     >
                       &gt;&gt;
                     </button>
-                  </div>
                 </div>
               </div>
             </div>
