@@ -65,6 +65,9 @@ function Navbar() {
         </ul>
 
         {/* Mobile Connect wallet and Navigation Icon */}
+        {!nav && <div className='content-center block md:hidden text-[12px] pr-2'>
+          <ConnectButton accountStatus="address" showBalance={false}/>
+        </div>}
         <div onClick={handleNav} className='content-center block md:hidden'>
           {nav ? <AiOutlineClose size={20} /> : <AiOutlineMenu size={20} />}
         </div>
@@ -101,9 +104,6 @@ function Navbar() {
         ))}
         <a href="https://twitter.com/MandeNetwork" target="_blank" className='p-4'><img src={Twitter} width={25} height={25} className='cursor-pointer'></img></a>
         <a href="https://discord.gg/9Ugch3fRC2" target="_blank" className='p-4'><img src={Discord} width={25} height={25} className='cursor-pointer'></img></a>
-        <div className='block md:hidden text-[18px]'>
-          <ConnectButton showBalance={false}/>
-        </div>
       </ul>
     </div>
   );
