@@ -132,9 +132,15 @@ function Dashboard() {
       ? `${address.substring(0, 4)}...${address.substring(address.length - 4)}`
       : address;
   };
-  const truncateAmount = (amount) => {
+  const truncateAmount = (amount, precision=4) => {
     const formattedAmount = ethers.utils.formatUnits(amount);
-    return (+formattedAmount).toFixed(4);
+    let [whole, decimal] = formattedAmount.split('.');
+    // toFixed will add imprecision to the number in some cases (parseFloat("1.9999").toFixed(18)),
+    // so we manually pad the number
+    while (decimal && decimal.length < precision) {
+      decimal += '0';
+    }
+    return `${whole}.${decimal}`;
   };
 
   const copyToClipboard = async (wallet) => {
@@ -245,8 +251,8 @@ function Dashboard() {
       stakesData = data.data.stakes.toReversed().map((data) => {
         return {
           address: data.candidate.id,
-          stake: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(2),
-          credibility: parseFloat(data.credScore).toFixed(2),
+          stake: truncateAmount(data.amount, 2),
+          credibility: truncateAmount(data.credScore, 2),
         };
       });
     } catch (err) {
@@ -277,10 +283,8 @@ function Dashboard() {
       receivedData = data.data.stakes.toReversed().map((data) => {
         return {
           address: data.staker.id,
-          received: parseFloat(ethers.utils.formatUnits(data.amount)).toFixed(
-            2
-          ),
-          credibilityGained: parseFloat(data.credScore).toFixed(2),
+          received: truncateAmount(data.amount, 2),
+          credibilityGained: truncateAmount(data.credScore, 2),
         };
       });
     } catch (err) {
@@ -288,7 +292,7 @@ function Dashboard() {
     }
 
     let finalStakesData = {};
-    stakesData.concat(receivedData).map(el => {
+    (stakesData || []).concat((receivedData || [])).map(el => {
       if (!finalStakesData[el.address]) finalStakesData[el.address] = {address: el.address};
       
       if (el.credibility) {
