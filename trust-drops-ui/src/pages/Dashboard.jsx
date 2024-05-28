@@ -254,7 +254,7 @@ function Dashboard() {
         return {
           address: data.candidate.id,
           stake: truncateAmount(data.amount, 2),
-          credibility: truncateAmount(data.credScore, 2),
+          credibility: data.credScore,
         };
       });
     } catch (err) {
@@ -286,7 +286,7 @@ function Dashboard() {
         return {
           address: data.staker.id,
           received: truncateAmount(data.amount, 2),
-          credibilityGained: truncateAmount(data.credScore, 2),
+          credibilityGained: data.credScore,
         };
       });
     } catch (err) {
