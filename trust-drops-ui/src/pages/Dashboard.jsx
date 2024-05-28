@@ -306,14 +306,7 @@ function Dashboard() {
         finalStakesData[el.address].credibilityGained = el.credibilityGained;
       }
     });
-
-    finalStakesData['test'] = {
-      stake: truncateAmount("10000000000000000000"),
-      credibility: truncateAmount("10990000000000000000"),
-      received: truncateAmount("10999999000000000000"),
-      credibilityGained: truncateAmount("109999990000000000"),
-    };
-
+    
     console.log("finalStakesData - ", finalStakesData)
 
     setUserStakesData(finalStakesData);
