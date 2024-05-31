@@ -55,7 +55,7 @@ contract TrustDrops is Ownable {
 
     constructor() Ownable(msg.sender) {
         approver = msg.sender;
-        deploymentWeek = block.timestamp / 1 weeks;
+        deploymentWeek = block.timestamp / 1 days;
     }
 
     function updateApprover(address _newApprover) external onlyOwner {
@@ -154,11 +154,11 @@ contract TrustDrops is Ownable {
     }
 
     function currentRelativeWeek() internal view returns(uint) {
-        return  (block.timestamp / 1 weeks) - deploymentWeek + 1;
+        return  (block.timestamp / 1 days) - deploymentWeek + 1;
     }
 
     function tempCurrentRelativeWeek() external view returns(uint) {
-        return  (block.timestamp / 1 weeks) - deploymentWeek + 1;
+        return  (block.timestamp / 1 days) - deploymentWeek + 1;
     }
 
     function weeklyYield() external view returns(uint) {
@@ -212,7 +212,7 @@ contract TrustDrops is Ownable {
 
     function _updateStaleWeekData(address _user) internal {
         uint currentWeek = currentRelativeWeek();
-        // Update the weeklyTotalCred for weeks that haven't been updated
+        // Update the weeklyTotalCred for days that haven't been updated
         for (uint week = rewardDetails.lastUpdatedWeek + 1; week <= currentWeek; week++) {
             if (rewardDetails.weeklyTotalCred[week] == 0) {
                 rewardDetails.weeklyTotalCred[week] = rewardDetails.lastWeeklyTotalCred;
@@ -221,7 +221,7 @@ contract TrustDrops is Ownable {
         rewardDetails.lastUpdatedWeek = currentWeek;
         rewardDetails.lastWeeklyTotalCred = rewardDetails.weeklyTotalCred[currentWeek];
 
-        // Update the userWeeklyCred for weeks that haven't been updated
+        // Update the userWeeklyCred for days that haven't been updated
         for (uint week = rewardDetails.userLastUpdatedWeek[_user] + 1; week <= currentWeek; week++) {
             if (rewardDetails.userWeeklyCred[_user][week] == 0) {
                 rewardDetails.userWeeklyCred[_user][week] = rewardDetails.lastUserCred[_user];

@@ -34,7 +34,7 @@ class UsersRank {
                 }`;
 
             const data = await client.query(usersQuery, {}).toPromise();
-            if (data.data.users.length == 0) {
+            if (!data.data || data.data.users.length == 0) {
                 break;
             }
 

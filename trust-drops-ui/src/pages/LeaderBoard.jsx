@@ -196,27 +196,7 @@ function LeaderBoard() {
             Leaderboard
           </div>
           <div className='mb-5 description-container text-slate-300'>
-            Build Your Credibility: Stake on Trusted Connections and Rise in
-            Rank!
-          </div>
-          <div className='description-container text-slate-300'>
-            The top 10000 addresses on the testnet leaderboard will receive the
-            following Mainnet airdrops:
-            <div className='md:flex gap-8'>
-              <ul className='list-disc ml-5'>
-                <li>Top 10: 2,000 $MAND each</li>
-                <li>Top 11-25: 1,500 $MAND each</li>
-                <li>Top 26-100: 750 $MAND each</li>
-              </ul>
-              <ul className='list-disc ml-5'>
-                <li>Top 100-1000: 100 $MAND each</li>
-                <li>Top 1000-5000: 20 $MAND each</li>
-                <li>Top 5000-10000: 10 $MAND each</li>
-              </ul>
-              <ul className='list-disc ml-5'>
-                <li>Top 3000 by "credibility given": 10 $MAND each</li>
-              </ul>
-            </div>
+            This is not an incentivized testnet!
           </div>
         </div>
         <div className='table-container w-full'>
@@ -281,7 +261,7 @@ function LeaderBoard() {
                                 />
                               </td>
                               <td className=' py-3 px-4 text-center'>
-                                {item.credibilityScore}
+                                {ethers.utils.formatUnits(item.credibilityScore, 2)}
                               </td>
                               <td className='text-center py-3 px-4'>
                                 {parseFloat(
@@ -289,7 +269,7 @@ function LeaderBoard() {
                                 ).toFixed(2)}
                               </td>
                               <td className='text-center py-3 px-4'>
-                                {item.credibilityGiven}
+                                {ethers.utils.formatUnits(item.credibilityGiven, 2)}
                               </td>
                             </tr>
                           ))}
