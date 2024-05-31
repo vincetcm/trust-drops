@@ -106,7 +106,11 @@ function Airdrop() {
       const resp =  await res.json();
       if (resp.message == "Linked") {
         setUser({approved: true});
-        toast(`You will receive ${truncateAmount(resp.user.airdropAmount)} MAND soon`, {icon: "🚀"});
+        if (resp.user.airdropAmount > 0) {
+          toast(`You will receive ${truncateAmount(resp.user.airdropAmount)} MAND soon`, {icon: "🚀"});
+        } else {
+          toast.info(`To qualify for the MAND Airdrop, you must have at least 100 followers. However, you can purchase MAND and use it for credibility staking.`);
+        }
       } else if (resp.message) {
         navigate("/airdrop", { replace: true });
         toast.error(resp.message);

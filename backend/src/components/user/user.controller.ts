@@ -100,7 +100,7 @@ const linkUserTwitter = async (req: Request, res: Response) => {
     });
     console.log('userData - ', userData);
     if (userData.data.public_metrics.followers_count < 25) {
-      res.status(httpStatus.BAD_REQUEST).send({ message: 'Twitter account must have atleast 25 followers!' });
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'You need a minimum of 25 followers to participate in credibility staking!' });
       return;
     }
     if (userData.data.public_metrics.followers_count >= 250) {
