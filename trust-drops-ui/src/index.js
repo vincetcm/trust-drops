@@ -8,7 +8,7 @@ import { WagmiProvider, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mandeChain = {
-  id: 28768,
+  id: 1807,
   name: 'Mande Network',
   iconUrl: 'https://app.mande.network/static/media/mandeLogo.adf3ad93dd2f4ef04578da26b715bf6e.svg',
   iconBackground: '#fff',
