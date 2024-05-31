@@ -161,6 +161,11 @@ contract TrustDrops is Ownable {
         return  (block.timestamp / 1 weeks) - deploymentWeek + 1;
     }
 
+    function weeklyYield() external view returns(uint) {
+        uint currentWeek = currentRelativeWeek();
+        return  rewardDetails.weeklyTotalRewards[currentWeek] / rewardDetails.weeklyTotalCred[currentWeek];
+    }
+
     function _calculateAllocation(address _user) internal view returns(uint) {
         if (currentRelativeWeek() == 1) {
             return 0;

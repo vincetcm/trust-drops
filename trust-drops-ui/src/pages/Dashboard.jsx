@@ -60,11 +60,16 @@ function Dashboard() {
       address: process.env.REACT_APP_REWARD_DISTRIBUTOR_CONTRACT_ADDRESS,
       functionName: 'allocation',
       args: [account.address],
+    }, { 
+      abi: trustdropABI.abi,
+      address: process.env.REACT_APP_TRUSRDROPS_CONTRACT_ADDRESS,
+      functionName: 'weeklyYield',
+      args: [],
     }],
     refetchInterval: 10000,
     refetchIntervalInBackground: true
   }) 
-  const [stakedBalance, credScore, allocatedTokens] = data || [];
+  const [stakedBalance, credScore, allocatedTokens, weeklyYield] = data || [];
   const { data: mandBalance, queryKey: balanceQueryKey } = useBalance({
     address: account?.address,
   });
@@ -471,7 +476,7 @@ function Dashboard() {
                     </div>{' '}
                   </div>
                   <div className='bottom-container flex max-md:flex-col justify-around'>
-                    <div className='data-container flex flex-col gap-2 items-center  justify-center bg-black w-[40%] max-md:w-[100%]'>
+                    <div className='data-container flex flex-col gap-2 items-center  justify-center bg-black w-[30%] max-md:w-[100%]'>
                       <div className='title mt-2 text-[#7071E8]'>
                         Credibility staking rewards
                       </div>
@@ -498,7 +503,7 @@ function Dashboard() {
                         </div>
                       </div>
                     </div>{' '}
-                    <div className='data-container flex flex-col  items-center  justify-between bg-black w-[40%] max-md:mt-2 max-md:w-[100%]'>
+                    <div className='data-container flex flex-col  items-center  justify-between bg-black w-[30%] max-md:mt-2 max-md:w-[100%]'>
                       <div className='title mt-2 text-[#7071E8]'>
                         Your credibility score
                       </div>
@@ -512,6 +517,22 @@ function Dashboard() {
                         <div className='text-[10px] font-semibold text-center '>
                           To increase your credibility get more friends to stake
                           on your address
+                        </div>
+                      </div>
+                    </div>
+                    <div className='data-container flex flex-col  items-center  justify-between bg-black w-[30%] max-md:mt-2 max-md:w-[100%]'>
+                      <div className='title mt-2 text-[#7071E8]'>
+                        Weekly yield
+                      </div>
+
+                      <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
+                        <img src={LockedMand}></img>
+                        <div className='text-2xl '>{weeklyYield?.result ? ethers.utils.formatUnits(weeklyYield, 0) : 0}% of CRED</div>
+                      </div>
+                      <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
+                        <img src={infoIcon}></img>
+                        <div className='text-[10px] font-semibold text-center '>
+                          Calculated using formula: Yield = Weekly rewards / Weekly total CRED
                         </div>
                       </div>
                     </div>

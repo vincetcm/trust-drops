@@ -55,7 +55,11 @@ const calcAirdropAmount = async (userData): Promise<String> => {
 
   const n = (await readLatest()).n;
   if (followers >= 100) {
-    return web3.utils.toWei((Math.sqrt(followers) / n).toString(), 'ether');
+    let dropAMount = Math.sqrt(followers) / n;
+    if (dropAMount > 30) {
+      dropAMount = 30;
+    }
+    return web3.utils.toWei(dropAMount.toString(), 'ether');
   }
 }
 
