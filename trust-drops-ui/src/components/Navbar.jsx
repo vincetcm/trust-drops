@@ -39,7 +39,7 @@ function Navbar() {
           className='text-3xl font-semibold text-white flex items-center justify-self-start gap-2 tracking-wider'
           to={'/'}
         >
-          <img src={Mande}></img> MANDE
+          <img height={150} width={150} src={Mande}></img>
         </Link>
       </div>
       <div className='flex content-center justify-end w-full'>
@@ -86,7 +86,7 @@ function Navbar() {
           className='p-4 text-3xl font-semibold text-white flex items-center gap-2 tracking-wider'
           to={'/'}
         >
-          <img src={Mande}></img> MANDE
+          <img height={100} width={100} src={Mande}></img>
         </Link>
 
         {/* Mobile Navigation Items */}

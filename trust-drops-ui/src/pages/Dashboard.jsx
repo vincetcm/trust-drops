@@ -482,7 +482,6 @@ function Dashboard() {
                       </div>
                       <div className='bottom-claim-container flex justify-between items-center w-full px-4 '>
                         <div className='data-value-container text-[24px] flex gap-[4px] '>
-                          <img src={LockedMand}></img>
                           <div className='text-xl'>{allocatedTokens?.result ? truncateAmount(allocatedTokens.result) : 0}</div>
                         </div>
                         <button
@@ -509,7 +508,6 @@ function Dashboard() {
                       </div>
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
-                        <img src={LockedMand}></img>
                         <div className='text-2xl '>{credScore?.result ? ethers.utils.formatUnits(credScore.result, 2) : 0} CRED</div>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
@@ -526,7 +524,6 @@ function Dashboard() {
                       </div>
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
-                        <img src={LockedMand}></img>
                         <div className='text-2xl '>{weeklyYield?.result ? truncateAmount(weeklyYield.result, 0, 14) : 0}% of CRED</div>
                       </div>
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
@@ -562,7 +559,7 @@ function Dashboard() {
                     tokens that are staked on you. For example if one friend
                     stakes 100 $MAND tokens on your address you get √100 = 10
                     credibilty points,But if same 100 $MAND tokens are staked by
-                    4 different friends at $25 each you get 4*√25 = 20
+                    4 different friends at 25 $MAND each you get 4*√25 = 20
                     credibilty points.
                     <br></br>
                   </div>
