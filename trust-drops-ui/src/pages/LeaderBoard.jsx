@@ -196,7 +196,7 @@ function LeaderBoard() {
             Leaderboard
           </div>
           <div className='mb-5 description-container text-slate-300'>
-            This is not an incentivized testnet!
+          Earn "Trustdrops" by leading on the leaderboard in the Mande ecosystem and partner projects.
           </div>
         </div>
         <div className='table-container w-full'>

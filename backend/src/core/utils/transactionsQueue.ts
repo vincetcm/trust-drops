@@ -88,13 +88,14 @@ class TransactionsQueue {
                 user.airdropAmount
               )
             const encoded = methodCall.encodeABI();
-            methodCall.estimateGas({ from: adminAddress.address }).then(gas => {
+            methodCall.estimateGas({ from: adminAddress.address }).then(async gas => {
               const tx = {
-                gas: gas,
+                nonce: parseInt(web3.utils.toHex(await web3.eth.getTransactionCount(adminAddress.address, "pending"))),
+                gas: gas*2,
                 gasPrice: 50000000000,
                 to: config.trustdropsContractAddress,
                 data: encoded,
-                from: adminAddress.address,
+                from: adminAddress.address
               };
               console.log(tx);
               web3.eth.getBalance(adminAddress.address).then(console.log);

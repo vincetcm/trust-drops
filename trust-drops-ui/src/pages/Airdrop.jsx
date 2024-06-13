@@ -181,7 +181,6 @@ function Airdrop() {
               </button>
             </div>
           </div>
-          <i>*This is a testnet application. Please note that the AIRDROP tokens received are test tokens only. A similar app will be used to receive mainnet tokens on our mainnet launch</i>
         </div>
         <div className='right-container  w-[40%]  h-full '>
           <img src={AirdropImg} className='object-cover h-full'></img>
