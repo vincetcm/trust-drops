@@ -13,7 +13,7 @@ transactionsQueue.processTransactionsQueue();
 UsersRank.updateRank();
 setInterval(() => UsersRank.updateRank(), 60*60*1000);
 AirdropFactor.update();
-setInterval(() => AirdropFactor.update(), 60*60*1000);
+setInterval(() => AirdropFactor.update(), 5*60*1000);
 const server: Server = app.listen(port, (): void => {
   logger.info(`Aapplication '${ptojectName}' listens on PORT: ${port}`);
 });
