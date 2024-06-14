@@ -55,7 +55,7 @@ contract TrustDrops is Ownable {
 
     constructor() Ownable(msg.sender) {
         approver = msg.sender;
-        deploymentWeek = block.timestamp / 1 days;
+        deploymentWeek = block.timestamp / 1 weeks;
     }
 
     function updateApprover(address _newApprover) external onlyOwner {
@@ -70,7 +70,7 @@ contract TrustDrops is Ownable {
         approvalAirdropAmount = _updatedAmount;
     }
 
-    function updateWeeklyTotalRewards(WeeklyRewardsParam[] memory _weeklyRewards) external {
+    function updateWeeklyTotalRewards(WeeklyRewardsParam[] memory _weeklyRewards) external onlyOwner {
         for (uint i=0; i<_weeklyRewards.length; i++) {
             rewardDetails.weeklyTotalRewards[_weeklyRewards[i].weekNumber] = _weeklyRewards[i].reward;
         }
@@ -82,9 +82,17 @@ contract TrustDrops is Ownable {
         require(approvedId[_id] == false, "TrustDrops::Id already approved");
         approvedAddress[_user] = true;
         approvedId[_id] = true;
-        (bool sent, ) = (_user).call{value: _amount}("");
         seedFund -= _amount;
+        (bool sent, ) = (_user).call{value: _amount}("");
         require(sent, "TrustDrops::Failed to send Ether");
+    }
+
+    // safety fallback 
+    function withdraw() external onlyOwner {
+        uint totBal = address(this).balance;
+        address owner = owner();
+        (bool sent, ) = (owner).call{value: totBal}("");
+        require(sent, "TrustDrops::Failed to withdraw Ether");
     }
 
     function stake(address candidate) payable external {
@@ -154,11 +162,7 @@ contract TrustDrops is Ownable {
     }
 
     function currentRelativeWeek() internal view returns(uint) {
-        return  (block.timestamp / 1 days) - deploymentWeek + 1;
-    }
-
-    function tempCurrentRelativeWeek() external view returns(uint) {
-        return  (block.timestamp / 1 days) - deploymentWeek + 1;
+        return  (block.timestamp / 1 weeks) - deploymentWeek + 1;
     }
 
     function weeklyYield() external view returns(uint) {
@@ -202,6 +206,8 @@ contract TrustDrops is Ownable {
 
     function claimTokens() external {
         uint alloc = _calculateAllocation(msg.sender);
+        uint available = address(this).balance - seedFund;
+        require(alloc <= available, "Funds unavailable");
         require(alloc > 0, "No reward allocation");
         _updateStaleWeekData(msg.sender);
         rewardDetails.userLastClaimed[msg.sender] = currentRelativeWeek() - 1;
@@ -212,7 +218,7 @@ contract TrustDrops is Ownable {
 
     function _updateStaleWeekData(address _user) internal {
         uint currentWeek = currentRelativeWeek();
-        // Update the weeklyTotalCred for days that haven't been updated
+        // Update the weeklyTotalCred for weeks that haven't been updated
         for (uint week = rewardDetails.lastUpdatedWeek + 1; week <= currentWeek; week++) {
             if (rewardDetails.weeklyTotalCred[week] == 0) {
                 rewardDetails.weeklyTotalCred[week] = rewardDetails.lastWeeklyTotalCred;
@@ -221,7 +227,7 @@ contract TrustDrops is Ownable {
         rewardDetails.lastUpdatedWeek = currentWeek;
         rewardDetails.lastWeeklyTotalCred = rewardDetails.weeklyTotalCred[currentWeek];
 
-        // Update the userWeeklyCred for days that haven't been updated
+        // Update the userWeeklyCred for weeks that haven't been updated
         for (uint week = rewardDetails.userLastUpdatedWeek[_user] + 1; week <= currentWeek; week++) {
             if (rewardDetails.userWeeklyCred[_user][week] == 0) {
                 rewardDetails.userWeeklyCred[_user][week] = rewardDetails.lastUserCred[_user];

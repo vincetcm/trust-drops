@@ -497,8 +497,7 @@ function Dashboard() {
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
                         <div className='text-[10px] font-semibold text-center '>
-                          Rewards are distributed daily 6AM CT
-                          (Central time)
+                          Rewards are distributed weekly 2PM UTC
                         </div>
                       </div>
                     </div>{' '}
@@ -520,7 +519,7 @@ function Dashboard() {
                     </div>
                     <div className='data-container flex flex-col  items-center  justify-between bg-black w-[30%] max-md:mt-2 max-md:w-[100%]'>
                       <div className='title mt-2 text-[#7071E8]'>
-                        Daily yield
+                        Weekly yield
                       </div>
 
                       <div className='data-value-container text-[24px] flex gap-[4px]  items-center'>
@@ -531,7 +530,7 @@ function Dashboard() {
                         <div className='text-[10px] font-semibold text-center '>
                           You might get upto {
                             ((weeklyYield?.result ? truncateAmount(weeklyYield.result, 0, 14) : 0)*(credScore?.result ? ethers.utils.formatUnits(credScore.result, 2) : 0))/100
-                          } MAND by tomorrow
+                          } MAND by next week
                         </div>
                       </div>
                     </div>

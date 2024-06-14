@@ -17,7 +17,7 @@ class AirdropFactor {
                 dymPrice = parseFloat(data.spot_price)*1e12;
             })
         
-        await fetch("https://dymension-rest.publicnode.com/dymensionxyz/dymension/gamm/v2/pools/12/prices?quote_asset_denom=adym&base_asset_denom=ibc/FB53D1684F155CBB86D9CE917807E42B59209EBE3AD3A92E15EF66586C073942")
+        await fetch("https://dymension-rest.publicnode.com/dymensionxyz/dymension/gamm/v2/pools/13/prices?quote_asset_denom=adym&base_asset_denom=ibc/5A26C8DC8DA66F4DD94326E67F94510188F5F7AFE2DB3933A0C823670E56EABF")
             .then(data => data.json())
             .then(data => {
                 usdPrice = parseFloat(data.spot_price) * dymPrice;
