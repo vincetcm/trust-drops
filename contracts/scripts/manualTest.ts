@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-const trustDropAddress = "0x555b23fCC5d38FbDAa646d51524DD017CB97f395";
+const trustDropAddress = "0xf9A67460Cd94B9F098ef211c8E46Ee27CDDEbb46";
 
 async function stake(signer, address, amount) {
   const trustDropsFactory = await ethers.getContractFactory("TrustDrops");
@@ -30,7 +30,7 @@ async function main() {
   // const approver = await trustDrops.approver();
   // console.log(approver)
 
-  // let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('500000')});
+  // let seedFundTx = await trustDrops.depositSeedFunds({value: ethers.parseEther('100000')});
   // await seedFundTx.wait();
 
   // const provider = await ethers.getDefaultProvider()
