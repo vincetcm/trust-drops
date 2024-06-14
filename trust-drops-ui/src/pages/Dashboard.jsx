@@ -497,7 +497,7 @@ function Dashboard() {
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
                         <div className='text-[10px] font-semibold text-center '>
-                          Next rewards will be distributed on 19th June 7AM UTC
+                          Rewards are distributed weekly 7AM UTC
                         </div>
                       </div>
                     </div>{' '}
@@ -530,7 +530,7 @@ function Dashboard() {
                         <div className='text-[10px] font-semibold text-center '>
                           You might get upto {
                             ((weeklyYield?.result ? truncateAmount(weeklyYield.result, 0, 14) : 0)*(credScore?.result ? ethers.utils.formatUnits(credScore.result, 2) : 0))/100
-                          } MAND by next week
+                          } MAND by 19th June 7AM UTC
                         </div>
                       </div>
                     </div>
