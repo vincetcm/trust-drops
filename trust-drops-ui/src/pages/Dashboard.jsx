@@ -497,7 +497,7 @@ function Dashboard() {
                       <div className='info-container  bg-[#7071E8] text-black flex items-center gap-2 w-full px-2'>
                         <img src={infoIcon}></img>
                         <div className='text-[10px] font-semibold text-center '>
-                          Rewards are distributed weekly 7AM UTC
+                          Rewards are distributed weekly
                         </div>
                       </div>
                     </div>{' '}
