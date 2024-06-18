@@ -411,6 +411,7 @@ function Dashboard() {
                         <ClipLoader color={'white'} size={24} />
                       )}
                     </button>
+                    Note: Your wallet must be linked to your twitter account to stake
                   </>
                 ) : (
                   <>
