@@ -188,13 +188,13 @@ contract TrustDrops is Ownable {
             uint weekTotalRewards = rewardDetails.weeklyTotalRewards[week];
             
             // Use fallback values if there is no data for the current week
-            if (userCred == 0) {
+            if (userCred == 0 && rewardDetails.userLastUpdatedWeek[_user] <= week) {
                 userCred = rewardDetails.lastUserCred[_user];
             }
-            if (weekTotalCred == 0) {
+            if (weekTotalCred == 0 && rewardDetails.lastUpdatedWeek <= week) {
                 weekTotalCred = rewardDetails.lastWeeklyTotalCred;
             }
-            
+
             if (weekTotalCred > 0) {
                 uint userWeekReward = (weekTotalRewards * userCred) / weekTotalCred;
                 totalReward += userWeekReward;
@@ -205,6 +205,7 @@ contract TrustDrops is Ownable {
     }
 
     function claimTokens() external {
+        require(approvedAddress[msg.sender], "Link your wallet with twitter to claim");
         uint alloc = _calculateAllocation(msg.sender);
         uint available = address(this).balance - seedFund;
         require(alloc <= available, "Funds unavailable");

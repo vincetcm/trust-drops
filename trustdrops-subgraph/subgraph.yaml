@@ -6,9 +6,9 @@ dataSources:
     name: TrustDrops
     network: mainnet
     source:
-      address: "0xf9A67460Cd94B9F098ef211c8E46Ee27CDDEbb46"
+      address: "0x7Fa2Addd4d59366AA98F66861d370C174DC00B46"
       abi: TrustDrops
-      startBlock: 2000
+      startBlock: 166636
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
