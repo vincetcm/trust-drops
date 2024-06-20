@@ -12,7 +12,7 @@ import LockedMand from '../assets/lockedMandIcon.svg';
 import infoIcon from '../assets/infoIcon.svg';
 import { motion } from 'framer-motion';
 import { gql } from '@urql/core';
-import { useAccount, useWriteContract, useReadContracts, useBalance } from 'wagmi'
+import { useAccount, useWriteContract, useReadContracts, useBalance, useWaitForTransactionReceipt } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query' 
 import trustdropABI from '../abis/trustdropABI.json';
 
@@ -76,50 +76,73 @@ function Dashboard() {
 
   const { 
     data: stakeTxHash,
-    error: stakeTxError, 
+    error: stakeTxError,
+    isPending: stakeTxPending,
     writeContract: writeStakeTx
   } = useWriteContract();
+  const { isLoading: stakeTxConfirming, isSuccess: stakeTxSuccess } =
+    useWaitForTransactionReceipt({
+      hash: stakeTxHash,
+    })
 
   const { 
     data: unstakeTxHash,
-    error: unstakeTxError, 
+    error: unstakeTxError,
+    isPending: unstakeTxPending,
     writeContract: writeUnstakeTx
   } = useWriteContract();
+  const { isLoading: unstakeTxConfirming, isSuccess: unstakeTxSuccess } =
+    useWaitForTransactionReceipt({
+      hash: unstakeTxHash,
+    })
 
   const { 
     data: claimTxHash,
-    error: claimTxError, 
+    error: claimTxError,
+    isPending: claimTxPending,
     writeContract: writeClaimTx
   } = useWriteContract();
+  const { isLoading: claimTxConfirming, isSuccess: claimTxSuccess } =
+    useWaitForTransactionReceipt({
+      hash: claimTxHash,
+    })
 
   useEffect(() => {
-    if (stakeTxHash) {
+    if (!stakeTxConfirming && stakeTxSuccess) {
       toast.success('Stake successfull');
       setLoadingStakeTx(false);
       queryClient.invalidateQueries({ balanceQueryKey });
     }
-
+    
     if (stakeTxError) {
-      toast.error(stakeTxError);
+      if (stakeTxError.shortMessage) {
+        toast.error(stakeTxError.shortMessage);
+      } else if (stakeTxError.message) {
+        toast.error(stakeTxError.message);
+      }
       setLoadingStakeTx(false);
     }
-  }, [stakeTxHash, stakeTxError]);
+  }, [stakeTxConfirming, stakeTxSuccess, stakeTxError]);
 
   useEffect(() => {
-    if (unstakeTxHash) {
+    if (!unstakeTxConfirming && unstakeTxSuccess) {
       toast.success('Unstake successfull');
       setLoadingUnstakeTx(false);
       queryClient.invalidateQueries({ balanceQueryKey });
     }
 
     if (unstakeTxError) {
-      toast.error(unstakeTxError);
+      if (unstakeTxError.shortMessage) {
+        toast.error(unstakeTxError.shortMessage);
+      } else if (unstakeTxError.message) {
+        toast.error(unstakeTxError.message);
+      }
       setLoadingUnstakeTx(false);
     }
-  }, [unstakeTxHash, unstakeTxError]);
+  }, [unstakeTxConfirming, unstakeTxSuccess, unstakeTxError]);
 
   useEffect(() => {
-    if (claimTxHash) {
+    if (!claimTxConfirming && claimTxSuccess) {
       toast.success('Claim successfull');
       setLoadingClaimTx(false);
       queryClient.invalidateQueries({ balanceQueryKey });
@@ -129,7 +152,7 @@ function Dashboard() {
       toast.error("Claim failed");
       setLoadingClaimTx(false);
     }
-  }, [claimTxHash, claimTxError]);
+  }, [claimTxConfirming, claimTxSuccess, claimTxError]);
 
   const formatAddress = (address) => {
     const maxLength = 18;
@@ -312,8 +335,6 @@ function Dashboard() {
       }
     });
     
-    console.log("finalStakesData - ", finalStakesData)
-
     setUserStakesData(finalStakesData);
   }
 
@@ -405,6 +426,7 @@ function Dashboard() {
                     <button
                       onClick={handleStake}
                       className='flex justify-center items-center w-full bg-[#7071E8] p-3 rounded text-white hover:bg-[#7071E8] transition-colors'
+                      disabled={stakeTxConfirming || stakeTxPending}
                     >
                       {!loadingStakeTx && 'Stake'}
                       {loadingStakeTx && (
@@ -438,6 +460,7 @@ function Dashboard() {
                     <button
                       onClick={handleUnstake}
                       className='flex justify-center items-center w-full text-white bg-red-500 p-3 rounded hover:bg-red-700 transition-colors'
+                      disabled={unstakeTxConfirming || unstakeTxPending}
                     >
                       {!loadingUnstakeTx && 'Unstake'}
                       {loadingUnstakeTx && (
@@ -488,6 +511,7 @@ function Dashboard() {
                         <button
                           className='flex justify-center items-center w-[50%] claim-btn text-lg bg-claim-btn-gradient px-2 border-[2px] border-[#7071E8]'
                           onClick={handleClaim}
+                          disabled={claimTxConfirming || claimTxPending}
                         >
                           {!loadingClaimTx && 'Claim'}
                           {loadingClaimTx && (
@@ -589,7 +613,6 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {console.log("userStakesData - ", userStakesData)}
                     {Object.keys(userStakesData).map((data, index) => (
                       <tr key={index} className='border-b w-4  text-md'>
                         <td
