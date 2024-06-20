@@ -555,7 +555,7 @@ function Dashboard() {
                         <div className='text-[10px] font-semibold text-center '>
                           You might get upto {
                             ((weeklyYield?.result ? truncateAmount(weeklyYield.result, 0, 14) : 0)*(credScore?.result ? ethers.utils.formatUnits(credScore.result, 2) : 0))/100
-                          } MAND by Friday 12:00PM UTC
+                          } MAND by Thursday 00:01 UTC
                         </div>
                       </div>
                     </div>
