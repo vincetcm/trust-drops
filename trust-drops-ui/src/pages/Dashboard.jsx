@@ -149,7 +149,11 @@ function Dashboard() {
     }
 
     if (claimTxError) {
-      toast.error("Claim failed");
+      if (claimTxError.shortMessage) {
+        toast.error(claimTxError.shortMessage);
+      } else if (claimTxError.message) {
+        toast.error(claimTxError.message);
+      }
       setLoadingClaimTx(false);
     }
   }, [claimTxConfirming, claimTxSuccess, claimTxError]);
