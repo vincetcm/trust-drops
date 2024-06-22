@@ -99,14 +99,19 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       ],
     });
     console.log('userData - ', userData);
-    if (userData.data.public_metrics.followers_count < 50) {
-      res.status(httpStatus.BAD_REQUEST).send({ message: 'You need a minimum of 50 followers to participate in credibility staking!' });
+    if (userData.data.public_metrics.followers_count < 50 || userData.data.public_metrics.following_count < 25) {
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'Sorry you are not eligible!' });
+      return;
+    }
+    if (userData.data.public_metrics.tweet_count < 50 && userData.data.public_metrics.like_count < 100) {
+      res.status(httpStatus.BAD_REQUEST).send({ message: 'Sorry you are not eligible!' });
       return;
     }
     if (userData.data.public_metrics.followers_count >= 250) {
       await twitterClientLocal.users.usersIdFollow(userData.data.id, { target_user_id: "1572091322374451200" });
       console.log('followed mande twitter');
     }
+    console.log('passed twitter criteria');
 
     const user = {
       address,
