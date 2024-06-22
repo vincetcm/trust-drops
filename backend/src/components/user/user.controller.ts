@@ -103,7 +103,7 @@ const linkUserTwitter = async (req: Request, res: Response) => {
       res.status(httpStatus.BAD_REQUEST).send({ message: 'Sorry you are not eligible!' });
       return;
     }
-    if (userData.data.public_metrics.tweet_count < 50 && userData.data.public_metrics.like_count < 100) {
+    if (userData.data.public_metrics.tweet_count < 50) {
       res.status(httpStatus.BAD_REQUEST).send({ message: 'Sorry you are not eligible!' });
       return;
     }
