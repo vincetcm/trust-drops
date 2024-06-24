@@ -137,7 +137,7 @@ function Airdrop() {
             <div className='small-text md:text-[16px] text-[12px] text-slate-400'>
               YOU'RE ALMOST THERE
             </div>
-            <div className='Large-text md:text-[32px] text-[18px]'>To claim your airdrop:</div>
+            <div className='Large-text md:text-[32px] text-[18px]'>Claim your airdrop to participate in credibility staking:</div>
           </div>
           <div className='bottomContainer bg-airdrop-gradient px-8 py-8 flex flex-col '>
             <div className='flex justify-between  '>
