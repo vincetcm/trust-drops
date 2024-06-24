@@ -181,6 +181,7 @@ function Airdrop() {
               </button>
             </div>
           </div>
+          <span>Tip: Join our <a class="text-[#7071E8]" href="https://discord.gg/9Ugch3fRC2" target="blank">Discord server</a> and use the #stake-for-stake channel to request our community members to stake on you.</span>
         </div>
         <div className='right-container  w-[40%]  h-full '>
           <img src={AirdropImg} className='object-cover h-full'></img>
