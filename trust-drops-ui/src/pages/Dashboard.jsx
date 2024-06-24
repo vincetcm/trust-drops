@@ -478,6 +478,7 @@ function Dashboard() {
             <div className='main-container-cr md:w-[60%] max-h-full flex flex-col gap-4 '>
               <div className='claim-rewards-container bg-credibility-staking-rewards-gradient px-4 py-2 flex flex-col  gap-4 h-full'>
                 <div className='top-data-container flex flex-col gap-2'>
+                <span>Tip: Join our <a class="text-[#7071E8]" href="https://discord.gg/9Ugch3fRC2" target="blank">Discord server</a> and use the #stake-for-stake channel to request our community members to stake on you.</span>
                   <div className='top-container bg-black w-full flex max-md:flex-col justify-around py-4 '>
                     <div className='data-container flex-1  flex flex-col items-center  justify-center max-md:pb-5'>
                       <div className='title text-[#7071E8]'>Rank</div>
